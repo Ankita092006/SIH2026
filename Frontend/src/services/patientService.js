@@ -3,14 +3,20 @@ import { getStorage, setStorage } from './storage';
 const PATIENT_KEY = 'sih_patient_profile';
 const SETTINGS_KEY = 'sih_patient_settings';
 
+const MOCK_PATIENT = {
+  id: 'PAT001',
+  name: 'Rajiv Sharma',
+  age: 72,
+  avatar: '/ner_senior_avatar.png',
+  medicalNotes: [
+    'Mild cognitive impairment observed',
+    'Needs frequent reminders for daily medication',
+    'Enjoys visual pattern games'
+  ]
+};
+
 export const getPatientProfile = () => {
-  return getStorage(PATIENT_KEY, {
-    id: "PT-8472",
-    name: "Robert Smith",
-    age: 72,
-    avatar: "/senior_avatar.png",
-    lastLogin: new Date().toISOString()
-  });
+  return getStorage(PATIENT_KEY, MOCK_PATIENT);
 };
 
 export const updatePatientProfile = (updates) => {

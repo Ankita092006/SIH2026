@@ -1,7 +1,8 @@
 import React from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { Trophy, CheckCircle2, XCircle, Clock, Percent } from 'lucide-react';
+import { Trophy, CheckCircle2, XCircle, Clock, Percent, Award } from 'lucide-react';
 import { cognitiveGames } from '../data/mockData';
+import { getGameResults } from '../services/gameService';
 
 export default function Results() {
   const { gameId } = useParams();
@@ -10,6 +11,10 @@ export default function Results() {
   
   const { score = 100, turns = 0, accuracy = 100, timeTaken = "0s", correct = 0, incorrect = 0 } = location.state || {};
   const gameName = cognitiveGames.find(g => g.id === gameId)?.title || "Game";
+
+  const allResults = getGameResults();
+  const gameHistory = allResults.filter(r => r.gameId === gameId);
+  const bestScore = Math.max(score, ...gameHistory.map(r => r.score || 0));
 
   return (
     <div style={{ paddingBottom: '2rem' }}>
@@ -23,18 +28,22 @@ export default function Results() {
       <div className="card" style={{ padding: '2rem', marginBottom: '1.5rem' }}>
         <h2 style={{ fontSize: '1.8rem', borderBottom: '2px solid var(--secondary-color)', paddingBottom: '1rem', marginTop: 0 }}>Performance Summary</h2>
         
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1.5rem', marginTop: '1.5rem' }}>
-          <div style={{ backgroundColor: 'var(--bg-color)', padding: '1rem', borderRadius: 'var(--border-radius)', textAlign: 'center' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginTop: '1.5rem' }}>
+          <div style={{ backgroundColor: 'var(--bg-color)', padding: '1rem', borderRadius: 'var(--border-radius)', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             <p style={{ fontSize: '1rem', color: 'var(--nav-text)', margin: '0 0 0.5rem 0' }}>Score</p>
-            <p style={{ fontSize: '2rem', fontWeight: 'bold', margin: 0, color: 'var(--primary-color)' }}>{score}</p>
+            <p style={{ fontSize: '1.8rem', fontWeight: 'bold', margin: 0, color: 'var(--primary-color)' }}>{score}</p>
           </div>
-          <div style={{ backgroundColor: 'var(--bg-color)', padding: '1rem', borderRadius: 'var(--border-radius)', textAlign: 'center' }}>
+          <div style={{ backgroundColor: 'var(--bg-color)', padding: '1rem', borderRadius: 'var(--border-radius)', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
             <p style={{ fontSize: '1rem', color: 'var(--nav-text)', margin: '0 0 0.5rem 0', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.2rem' }}><Percent size={16}/> Accuracy</p>
-            <p style={{ fontSize: '2rem', fontWeight: 'bold', margin: 0 }}>{accuracy}%</p>
+            <p style={{ fontSize: '1.8rem', fontWeight: 'bold', margin: 0 }}>{accuracy}%</p>
           </div>
-          <div style={{ backgroundColor: 'var(--bg-color)', padding: '1rem', borderRadius: 'var(--border-radius)', textAlign: 'center' }}>
-            <p style={{ fontSize: '1rem', color: 'var(--nav-text)', margin: '0 0 0.5rem 0', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.2rem' }}><Clock size={16}/> Time Taken</p>
-            <p style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>{timeTaken}</p>
+          <div style={{ backgroundColor: 'var(--bg-color)', padding: '1rem', borderRadius: 'var(--border-radius)', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <p style={{ fontSize: '1rem', color: 'var(--nav-text)', margin: '0 0 0.5rem 0', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.2rem' }}><Clock size={16}/> Time</p>
+            <p style={{ fontSize: '1.8rem', fontWeight: 'bold', margin: 0 }}>{timeTaken}</p>
+          </div>
+          <div style={{ backgroundColor: 'var(--bg-color)', padding: '1rem', borderRadius: 'var(--border-radius)', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <p style={{ fontSize: '1rem', color: 'var(--nav-text)', margin: '0 0 0.5rem 0', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.2rem' }}><Award size={16}/> Best</p>
+            <p style={{ fontSize: '1.8rem', fontWeight: 'bold', margin: 0, color: 'var(--nav-active)' }}>{bestScore}</p>
           </div>
         </div>
 

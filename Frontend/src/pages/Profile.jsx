@@ -65,7 +65,7 @@ export default function Profile() {
   };
 
   const handleResetAvatar = () => {
-    const defaultAvatar = "/senior_avatar.png";
+    const defaultAvatar = "/ner_senior_avatar.png";
     updatePatientProfile({ avatar: defaultAvatar });
     setProfile({ ...profile, avatar: defaultAvatar });
   };

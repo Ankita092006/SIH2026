@@ -1,16 +1,16 @@
 :root {
-  --primary-color: #2b6cb0;
-  --secondary-color: #e2e8f0;
-  --text-color: #1a202c;
-  --bg-color: #f7fafc;
+  --primary-color: #276749; /* Forest green */
+  --secondary-color: #E2D8C8; /* Bamboo / Earth tone */
+  --text-color: #1A202C; /* Deep Charcoal */
+  --bg-color: #FDFBF7; /* Warm off-white */
   --btn-text-color: #ffffff;
   --font-size-base: 18px;
   --font-family: 'Inter', system-ui, -apple-system, sans-serif;
   --spacing-base: 1rem;
   --border-radius: 8px;
-  --nav-bg: #ffffff;
+  --nav-bg: #FDFBF7;
   --nav-text: #4a5568;
-  --nav-active: #2b6cb0;
+  --nav-active: #9B2C2C; /* Subtle warm accent */
 }
 
 /* High Contrast Mode Variables */
@@ -94,6 +94,8 @@ a:hover, a:focus {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  background-color: var(--bg-color);
+  background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M20 20.5V18H0v-2h20v-2H0v-2h20v-2H0V8h20V6H0V4h20V2H0V0h22v20h2V0h2v20h2V0h2v20h2V0h2v20h2V0h2v20h2v2H20v-1.5zM0 20h2v20H0V20zm4 0h2v20H4V20zm4 0h2v20H8V20zm4 0h2v20h-2V20zm4 0h2v20h-2V20zm4 4h20v2H20v-2zm0 4h20v2H20v-2zm0 4h20v2H20v-2zm0 4h20v2H20v-2z' fill='%23276749' fill-opacity='0.03' fill-rule='evenodd'/%3E");
 }
 
 .main-content {

@@ -87,7 +87,7 @@ export default function Reminders() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
         <h1 style={{ fontSize: '2.5rem', margin: 0 }}>My Reminders</h1>
         <button onClick={openAddModal} style={{ padding: '0.8rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
           <Plus /> Add Reminder
@@ -96,8 +96,8 @@ export default function Reminders() {
 
       {isModalOpen && (
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-          <div className="card" style={{ width: '100%', maxWidth: '500px', margin: 0 }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+          <div className="card" style={{ width: '100%', maxWidth: '500px', margin: 0, maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
               <h2 style={{ margin: 0, fontSize: '1.8rem' }}>{editingId ? "Edit Reminder" : "Add Reminder"}</h2>
               <button onClick={() => setIsModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'black', padding: '0.5rem' }}><X /></button>
             </div>
@@ -146,13 +146,14 @@ export default function Reminders() {
           {reminders.map(reminder => (
             <div key={reminder.id} className="card" style={{ 
               display: 'flex', 
+              flexWrap: 'wrap',
               alignItems: 'center', 
               gap: '1.5rem',
               opacity: reminder.status === 'completed' ? 0.6 : 1,
               margin: '0',
               padding: '1.5rem'
             }}>
-              <div onClick={() => toggleStatus(reminder.id, reminder.status)} style={{ cursor: 'pointer' }}>
+              <div onClick={() => toggleStatus(reminder.id, reminder.status)} style={{ cursor: 'pointer', flexShrink: 0 }}>
                 {reminder.status === 'completed' ? (
                   <CheckCircle2 size={40} color="green" />
                 ) : reminder.status === 'pending' ? (
@@ -162,7 +163,7 @@ export default function Reminders() {
                 )}
               </div>
               
-              <div style={{ flex: 1 }}>
+              <div style={{ flex: '1 1 150px' }}>
                 <h2 style={{ fontSize: '1.5rem', margin: '0 0 0.5rem 0', textDecoration: reminder.status === 'completed' ? 'line-through' : 'none' }}>
                   {reminder.text}
                 </h2>

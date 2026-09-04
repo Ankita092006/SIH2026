@@ -29,18 +29,25 @@ export default function ResultsHistory() {
                   </span>
                 </div>
                 
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '1rem', marginBottom: '1rem' }}>
-                  <div>
-                    <p style={{ fontSize: '1rem', color: 'var(--nav-text)', margin: '0 0 0.2rem 0' }}>Score</p>
+                <div className="results-grid" style={{ marginBottom: '1rem' }}>
+                  <div style={{ backgroundColor: '#fff', border: '1px solid var(--secondary-color)', padding: '1rem', borderRadius: '12px', textAlign: 'center' }}>
+                    <p style={{ fontSize: '0.9rem', color: 'var(--nav-text)', margin: '0 0 0.5rem 0' }}>Score</p>
                     <p style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0, color: 'var(--primary-color)' }}>{result.score}</p>
                   </div>
-                  <div>
-                    <p style={{ fontSize: '1rem', color: 'var(--nav-text)', margin: '0 0 0.2rem 0' }}>Accuracy</p>
+                  <div style={{ backgroundColor: '#fff', border: '1px solid var(--secondary-color)', padding: '1rem', borderRadius: '12px', textAlign: 'center' }}>
+                    <p style={{ fontSize: '0.9rem', color: 'var(--nav-text)', margin: '0 0 0.5rem 0' }}>Accuracy</p>
                     <p style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>{result.accuracy}%</p>
                   </div>
-                  <div>
-                    <p style={{ fontSize: '1rem', color: 'var(--nav-text)', margin: '0 0 0.2rem 0' }}>Time</p>
+                  <div style={{ backgroundColor: '#fff', border: '1px solid var(--secondary-color)', padding: '1rem', borderRadius: '12px', textAlign: 'center' }}>
+                    <p style={{ fontSize: '0.9rem', color: 'var(--nav-text)', margin: '0 0 0.5rem 0' }}>Time</p>
                     <p style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>{result.timeTaken}</p>
+                  </div>
+                  <div 
+                    title={!result.averageResponseTime || result.averageResponseTime === '—' ? 'Not recorded for this activity.' : ''}
+                    style={{ backgroundColor: '#fff', border: '1px solid var(--secondary-color)', padding: '1rem', borderRadius: '12px', textAlign: 'center' }}
+                  >
+                    <p style={{ fontSize: '0.9rem', color: 'var(--nav-text)', margin: '0 0 0.5rem 0', whiteSpace: 'nowrap' }}>Reaction Time</p>
+                    <p style={{ fontSize: '1.5rem', fontWeight: 'bold', margin: 0 }}>{result.averageResponseTime || '—'}</p>
                   </div>
                 </div>
               </div>

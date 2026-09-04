@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { Trophy, CheckCircle2, XCircle, Clock, Percent, Award } from 'lucide-react';
+import { Trophy, CheckCircle2, XCircle, Clock, Percent, Award, Activity } from 'lucide-react';
 import { cognitiveGames } from '../data/mockData';
 import { getGameResults } from '../services/gameService';
 
@@ -9,7 +9,7 @@ export default function Results() {
   const navigate = useNavigate();
   const location = useLocation();
   
-  const { score = 100, turns = 0, accuracy = 100, timeTaken = "0s", correct = 0, incorrect = 0 } = location.state || {};
+  const { score = 100, turns = 0, accuracy = 100, timeTaken = "0s", correct = 0, incorrect = 0, averageResponseTime = "—" } = location.state || {};
   const gameName = cognitiveGames.find(g => g.id === gameId)?.title || "Game";
 
   const allResults = getGameResults();
@@ -25,25 +25,35 @@ export default function Results() {
         <p style={{ fontSize: '1.5rem', margin: 0 }}>Well done! You completed today's activity.</p>
       </div>
       
-      <div className="card" style={{ padding: '2rem', marginBottom: '1.5rem' }}>
-        <h2 style={{ fontSize: '1.8rem', borderBottom: '2px solid var(--secondary-color)', paddingBottom: '1rem', marginTop: 0 }}>Performance Summary</h2>
+      <div className="card" style={{ backgroundColor: 'var(--bg-color)', border: '1px solid var(--secondary-color)', borderRadius: '16px', padding: '1.5rem', marginBottom: '1.5rem', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--secondary-color)', paddingBottom: '1rem', marginBottom: '1.5rem' }}>
+          <h2 style={{ fontSize: '1.5rem', margin: 0, color: 'var(--primary-color)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <Award size={24} /> {gameName} Summary
+          </h2>
+          <span style={{ backgroundColor: 'var(--secondary-color)', color: 'var(--text-color)', padding: '0.4rem 1rem', borderRadius: '16px', fontSize: '0.9rem', fontWeight: 'bold' }}>
+            {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}, {new Date().toLocaleDateString()}
+          </span>
+        </div>
         
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginTop: '1.5rem' }}>
-          <div style={{ backgroundColor: 'var(--bg-color)', padding: '1rem', borderRadius: 'var(--border-radius)', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <p style={{ fontSize: '1rem', color: 'var(--nav-text)', margin: '0 0 0.5rem 0' }}>Score</p>
+        <div className="results-grid">
+          <div style={{ backgroundColor: '#fff', border: '1px solid var(--secondary-color)', padding: '1rem', borderRadius: '12px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <p style={{ fontSize: '1rem', color: 'var(--nav-text)', margin: '0 0 0.5rem 0', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.3rem' }}><Trophy size={16} color="var(--primary-color)"/> Score</p>
             <p style={{ fontSize: '1.8rem', fontWeight: 'bold', margin: 0, color: 'var(--primary-color)' }}>{score}</p>
           </div>
-          <div style={{ backgroundColor: 'var(--bg-color)', padding: '1rem', borderRadius: 'var(--border-radius)', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <p style={{ fontSize: '1rem', color: 'var(--nav-text)', margin: '0 0 0.5rem 0', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.2rem' }}><Percent size={16}/> Accuracy</p>
-            <p style={{ fontSize: '1.8rem', fontWeight: 'bold', margin: 0 }}>{accuracy}%</p>
+          <div style={{ backgroundColor: '#fff', border: '1px solid var(--secondary-color)', padding: '1rem', borderRadius: '12px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <p style={{ fontSize: '1rem', color: 'var(--nav-text)', margin: '0 0 0.5rem 0', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.3rem' }}><Percent size={16} color="#4A5568"/> Accuracy</p>
+            <p style={{ fontSize: '1.8rem', fontWeight: 'bold', margin: 0, color: '#2D3748' }}>{accuracy}%</p>
           </div>
-          <div style={{ backgroundColor: 'var(--bg-color)', padding: '1rem', borderRadius: 'var(--border-radius)', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <p style={{ fontSize: '1rem', color: 'var(--nav-text)', margin: '0 0 0.5rem 0', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.2rem' }}><Clock size={16}/> Time</p>
-            <p style={{ fontSize: '1.8rem', fontWeight: 'bold', margin: 0 }}>{timeTaken}</p>
+          <div style={{ backgroundColor: '#fff', border: '1px solid var(--secondary-color)', padding: '1rem', borderRadius: '12px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <p style={{ fontSize: '1rem', color: 'var(--nav-text)', margin: '0 0 0.5rem 0', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.3rem' }}><Clock size={16} color="#4A5568"/> Time</p>
+            <p style={{ fontSize: '1.8rem', fontWeight: 'bold', margin: 0, color: '#2D3748' }}>{timeTaken}</p>
           </div>
-          <div style={{ backgroundColor: 'var(--bg-color)', padding: '1rem', borderRadius: 'var(--border-radius)', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <p style={{ fontSize: '1rem', color: 'var(--nav-text)', margin: '0 0 0.5rem 0', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.2rem' }}><Award size={16}/> Best</p>
-            <p style={{ fontSize: '1.8rem', fontWeight: 'bold', margin: 0, color: 'var(--nav-active)' }}>{bestScore}</p>
+          <div 
+            title={averageResponseTime === '—' ? 'Not recorded for this activity.' : ''}
+            style={{ backgroundColor: '#fff', border: '1px solid var(--secondary-color)', padding: '1rem', borderRadius: '12px', textAlign: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
+          >
+            <p style={{ fontSize: '0.9rem', color: 'var(--nav-text)', margin: '0 0 0.5rem 0', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.3rem', whiteSpace: 'nowrap' }}><Activity size={16} color="#4A5568"/> Reaction Time</p>
+            <p style={{ fontSize: '1.8rem', fontWeight: 'bold', margin: 0, color: '#2D3748' }}>{averageResponseTime}</p>
           </div>
         </div>
 

@@ -136,39 +136,48 @@ export default function Profile() {
               <Type /> Text Size
             </label>
             <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.2rem' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.2rem', padding: '0.5rem 1rem', border: '2px solid var(--secondary-color)', borderRadius: '8px', cursor: 'pointer', backgroundColor: textSize === 'normal' ? 'rgba(39, 103, 73, 0.1)' : 'transparent' }}>
                 <input type="radio" name="textSize" value="normal" checked={textSize === 'normal'} onChange={() => setTextSize('normal')} style={{ transform: 'scale(1.5)' }} /> Normal
               </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.2rem' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.2rem', padding: '0.5rem 1rem', border: '2px solid var(--secondary-color)', borderRadius: '8px', cursor: 'pointer', backgroundColor: textSize === 'large' ? 'rgba(39, 103, 73, 0.1)' : 'transparent' }}>
                 <input type="radio" name="textSize" value="large" checked={textSize === 'large'} onChange={() => setTextSize('large')} style={{ transform: 'scale(1.5)' }} /> Large
               </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.2rem' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.2rem', padding: '0.5rem 1rem', border: '2px solid var(--secondary-color)', borderRadius: '8px', cursor: 'pointer', backgroundColor: textSize === 'extra-large' ? 'rgba(39, 103, 73, 0.1)' : 'transparent' }}>
                 <input type="radio" name="textSize" value="extra-large" checked={textSize === 'extra-large'} onChange={() => setTextSize('extra-large')} style={{ transform: 'scale(1.5)' }} /> Extra Large
               </label>
             </div>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '1.2rem', cursor: 'pointer' }}>
-              <input type="checkbox" checked={highContrast} onChange={e => setHighContrast(e.target.checked)} style={{ transform: 'scale(1.5)' }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '1.2rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Contrast /> <strong>High Contrast Mode</strong>
               </div>
-            </label>
+              <label className="toggle-switch">
+                <input type="checkbox" checked={highContrast} onChange={e => setHighContrast(e.target.checked)} aria-label="High Contrast Mode" />
+                <span className="toggle-slider"></span>
+              </label>
+            </div>
 
-            <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '1.2rem', cursor: 'pointer' }}>
-              <input type="checkbox" checked={reduceMotion} onChange={e => setReduceMotion(e.target.checked)} style={{ transform: 'scale(1.5)' }} />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '1.2rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <MonitorPlay /> <strong>Reduce Motion & Animations</strong>
               </div>
-            </label>
+              <label className="toggle-switch">
+                <input type="checkbox" checked={reduceMotion} onChange={e => setReduceMotion(e.target.checked)} aria-label="Reduce Motion" />
+                <span className="toggle-slider"></span>
+              </label>
+            </div>
 
-            <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '1.2rem', cursor: 'pointer' }}>
-              <input type="checkbox" checked={soundEnabled} onChange={e => setSoundEnabled(e.target.checked)} style={{ transform: 'scale(1.5)' }} />
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '1.2rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <strong>Sound Feedback</strong>
               </div>
-            </label>
+              <label className="toggle-switch">
+                <input type="checkbox" checked={soundEnabled} onChange={e => setSoundEnabled(e.target.checked)} aria-label="Sound Feedback" />
+                <span className="toggle-slider"></span>
+              </label>
+            </div>
           </div>
 
         </div>
@@ -178,21 +187,28 @@ export default function Profile() {
         <h2 style={{ fontSize: '1.8rem', borderBottom: '2px solid var(--secondary-color)', paddingBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <LucideBell size={28} /> Notification Preferences
         </h2>
-        <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '1.2rem', cursor: 'pointer' }}>
-            <input type="checkbox" defaultChecked style={{ transform: 'scale(1.5)' }} />
+        <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '1.2rem' }}>
             <div>
               <strong>Email Notifications</strong>
               <p style={{ margin: 0, fontSize: '1rem', color: 'var(--nav-text)' }}>Receive daily summaries and alerts</p>
             </div>
-          </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', fontSize: '1.2rem', cursor: 'pointer' }}>
-            <input type="checkbox" style={{ transform: 'scale(1.5)' }} />
+            <label className="toggle-switch">
+              <input type="checkbox" defaultChecked aria-label="Email Notifications" />
+              <span className="toggle-slider"></span>
+            </label>
+          </div>
+          
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '1.2rem' }}>
             <div>
               <strong>SMS Alerts</strong>
               <p style={{ margin: 0, fontSize: '1rem', color: 'var(--nav-text)' }}>Receive instant reminder texts</p>
             </div>
-          </label>
+            <label className="toggle-switch">
+              <input type="checkbox" aria-label="SMS Alerts" />
+              <span className="toggle-slider"></span>
+            </label>
+          </div>
         </div>
       </div>
 

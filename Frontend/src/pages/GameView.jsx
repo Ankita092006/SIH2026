@@ -6,6 +6,7 @@ import { playCorrectSound, playIncorrectSound, playCompletionSound } from '../ut
 // Removed RegionalIcons
 import { RefreshCw } from 'lucide-react';
 import ConfirmModal from '../components/ConfirmModal';
+import { useLanguage } from '../context/LanguageContext';
 
 /* =========================================================================
    Memory Match
@@ -18,6 +19,7 @@ function generateDeck() {
 }
 
 function MemoryMatch({ onComplete, soundEnabled }) {
+  const { t } = useLanguage();
   const [cards, setCards] = useState([]);
   const [flippedIndices, setFlippedIndices] = useState([]);
   const [turns, setTurns] = useState(0);
@@ -76,15 +78,15 @@ function MemoryMatch({ onComplete, soundEnabled }) {
     <div className="card" style={{ maxWidth: '600px', margin: '0 auto', backgroundColor: 'var(--bg-color)', border: '1px solid var(--secondary-color)', borderRadius: '16px', padding: '1.5rem', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
         <div>
-          <h2 style={{ fontSize: '1.8rem', color: 'var(--primary-color)', margin: '0 0 0.3rem 0' }}>Memory Match</h2>
-          <p style={{ fontSize: '1rem', color: 'var(--nav-text)', margin: 0 }}>Match identical pairs</p>
+          <h2 style={{ fontSize: '1.8rem', color: 'var(--primary-color)', margin: '0 0 0.3rem 0' }}>{t('games.memoryMatch')}</h2>
+          <p style={{ fontSize: '1rem', color: 'var(--nav-text)', margin: 0 }}>{t('games.matchPairs')}</p>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.5rem' }}>
           <span style={{ backgroundColor: 'var(--secondary-color)', color: 'var(--text-color)', padding: '0.4rem 1rem', borderRadius: '20px', fontWeight: 'bold', fontSize: '1rem' }}>
-            Attempts: {turns}
+            {t('games.attempts')} {turns}
           </span>
           <span style={{ fontSize: '0.9rem', color: 'var(--primary-color)', fontWeight: 'bold' }}>
-            Pairs found: {matches} of 6
+            {t('games.pairsFound')} {matches} {t('games.of')} 6
           </span>
         </div>
       </div>
@@ -134,7 +136,7 @@ function MemoryMatch({ onComplete, soundEnabled }) {
           style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', backgroundColor: 'rgba(39, 103, 73, 0.1)', border: 'none', color: 'var(--primary-color)', padding: '0.6rem 1.5rem', borderRadius: '8px', fontSize: '1rem', cursor: 'pointer', fontWeight: 'bold' }}
         >
           <RefreshCw size={18} />
-          Restart Game
+          {t('games.restartGame')}
         </button>
       </div>
 
@@ -148,10 +150,10 @@ function MemoryMatch({ onComplete, soundEnabled }) {
           setMatches(0);
           startTime.current = Date.now();
         }}
-        title="Restart this activity?"
-        message="Your current progress will be lost."
-        confirmText="Restart Game"
-        cancelText="Keep Playing"
+        title={t('games.restartActivity')}
+        message={t('games.progressLost')}
+        confirmText={t('games.restartGame')}
+        cancelText={t('games.keepPlaying')}
       />
     </div>
   );
@@ -161,6 +163,7 @@ function MemoryMatch({ onComplete, soundEnabled }) {
    Number Recall
 ========================================================================= */
 function NumberRecall({ onComplete, soundEnabled, triggerFeedback }) {
+  const { t } = useLanguage();
   const [round, setRound] = useState(1);
   const [number, setNumber] = useState('');
   const [showNumber, setShowNumber] = useState(true);
@@ -212,17 +215,17 @@ function NumberRecall({ onComplete, soundEnabled, triggerFeedback }) {
 
   return (
     <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
-      <h2 style={{ fontSize: '1.2rem', marginBottom: '2rem', color: 'var(--nav-text)' }}>Round {round} of {maxRounds}</h2>
+      <h2 style={{ fontSize: '1.2rem', marginBottom: '2rem', color: 'var(--nav-text)' }}>{t('games.round')} {round} {t('games.of')} {maxRounds}</h2>
       {showNumber ? (
         <div>
-          <h2 style={{ fontSize: '1.5rem' }}>Memorize this number:</h2>
+          <h2 style={{ fontSize: '1.5rem' }}>{t('games.memorizeNumber')}</h2>
           <h1 style={{ fontSize: '4rem', letterSpacing: '0.5rem', color: 'var(--primary-color)' }}>{number}</h1>
         </div>
       ) : (
         <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
-          <label style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>What was the number?</label>
+          <label style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{t('games.whatWasNumber')}</label>
           <input type="number" value={input} onChange={e => setInput(e.target.value)} required autoFocus style={{ fontSize: '2rem', padding: '1rem', width: 'min(100%, 250px)', textAlign: 'center', borderRadius: '8px', border: '2px solid var(--secondary-color)' }} />
-          <button type="submit" style={{ fontSize: '1.5rem', padding: '1rem 3rem' }}>Submit</button>
+          <button type="submit" style={{ fontSize: '1.5rem', padding: '1rem 3rem' }}>{t('games.submit')}</button>
         </form>
       )}
 
@@ -244,7 +247,7 @@ function NumberRecall({ onComplete, soundEnabled, triggerFeedback }) {
           style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', backgroundColor: 'rgba(39, 103, 73, 0.1)', border: 'none', color: 'var(--primary-color)', padding: '0.6rem 1.5rem', borderRadius: '8px', fontSize: '1rem', cursor: 'pointer', fontWeight: 'bold' }}
         >
           <RefreshCw size={18} />
-          Restart Game
+          {t('games.restartGame')}
         </button>
       </div>
 
@@ -260,10 +263,10 @@ function NumberRecall({ onComplete, soundEnabled, triggerFeedback }) {
           setInput('');
           setTimeout(() => setShowNumber(false), 3500);
         }}
-        title="Restart this activity?"
-        message="Your current progress will be lost."
-        confirmText="Restart Game"
-        cancelText="Keep Playing"
+        title={t('games.restartActivity')}
+        message={t('games.progressLost')}
+        confirmText={t('games.restartGame')}
+        cancelText={t('games.keepPlaying')}
       />
     </div>
   );
@@ -274,6 +277,7 @@ function NumberRecall({ onComplete, soundEnabled, triggerFeedback }) {
 ========================================================================= */
 const WORDS = ["APPLE", "HOUSE", "CHAIR", "WATER", "BREAD", "RIVER", "STONE", "CLOUD", "TABLE", "GRASS", "TRAIN", "SMILE"];
 function WordRecall({ onComplete, soundEnabled, triggerFeedback }) {
+  const { t } = useLanguage();
   const [targetWords, setTargetWords] = useState([]);
   const [options, setOptions] = useState([]);
   const [showWords, setShowWords] = useState(true);
@@ -324,15 +328,15 @@ function WordRecall({ onComplete, soundEnabled, triggerFeedback }) {
     <div className="card" style={{ textAlign: 'center', padding: '2rem' }}>
       {showWords ? (
         <div>
-          <h2 style={{ fontSize: '1.5rem' }}>Memorize these 3 words:</h2>
+          <h2 style={{ fontSize: '1.5rem' }}>{t('games.memorizeWords')}</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', margin: '3rem 0' }}>
-            {targetWords.map(w => <h1 key={w} style={{ color: 'var(--primary-color)', margin: 0, fontSize: '3rem' }}>{w}</h1>)}
+            {targetWords.map(w => <h1 key={w} style={{ color: 'var(--primary-color)', margin: 0, fontSize: '3rem' }}>{t(`games.words.${w}`) || w}</h1>)}
           </div>
         </div>
       ) : (
         <div>
-          <h2 style={{ fontSize: '1.5rem' }}>Select the 3 words you saw:</h2>
-          <p style={{ fontSize: '1.2rem', color: 'var(--nav-text)', marginBottom: '2rem' }}>You have selected {selected.length} of 3</p>
+          <h2 style={{ fontSize: '1.5rem' }}>{t('games.selectWords')}</h2>
+          <p style={{ fontSize: '1.2rem', color: 'var(--nav-text)', marginBottom: '2rem' }}>{t('games.youSelected')} {selected.length} {t('games.of')} 3</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: '1rem', margin: '2rem 0' }}>
             {options.map(w => (
               <button 
@@ -347,11 +351,11 @@ function WordRecall({ onComplete, soundEnabled, triggerFeedback }) {
                   margin: 0
                 }}
               >
-                {w}
+                {t(`games.words.${w}`) || w}
               </button>
             ))}
           </div>
-          <button onClick={handleSubmit} disabled={selected.length !== 3} style={{ width: '100%', fontSize: '1.5rem', padding: '1rem' }}>Submit Answers</button>
+          <button onClick={handleSubmit} disabled={selected.length !== 3} style={{ width: '100%', fontSize: '1.5rem', padding: '1rem' }}>{t('games.submitAnswers')}</button>
         </div>
       )}
 
@@ -367,7 +371,7 @@ function WordRecall({ onComplete, soundEnabled, triggerFeedback }) {
           style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', backgroundColor: 'rgba(39, 103, 73, 0.1)', border: 'none', color: 'var(--primary-color)', padding: '0.6rem 1.5rem', borderRadius: '8px', fontSize: '1rem', cursor: 'pointer', fontWeight: 'bold' }}
         >
           <RefreshCw size={18} />
-          Restart Game
+          {t('games.restartGame')}
         </button>
       </div>
 
@@ -377,10 +381,10 @@ function WordRecall({ onComplete, soundEnabled, triggerFeedback }) {
         onConfirm={() => {
           startRound();
         }}
-        title="Restart this activity?"
-        message="Your current progress will be lost."
-        confirmText="Restart Game"
-        cancelText="Keep Playing"
+        title={t('games.restartActivity')}
+        message={t('games.progressLost')}
+        confirmText={t('games.restartGame')}
+        cancelText={t('games.keepPlaying')}
       />
     </div>
   );
@@ -390,6 +394,7 @@ function WordRecall({ onComplete, soundEnabled, triggerFeedback }) {
    Pattern Recognition
 ========================================================================= */
 function PatternRecall({ onComplete, soundEnabled, triggerFeedback }) {
+  const { t } = useLanguage();
   const [round, setRound] = useState(1);
   const [pattern, setPattern] = useState([]);
   const [options, setOptions] = useState([]);
@@ -446,8 +451,8 @@ function PatternRecall({ onComplete, soundEnabled, triggerFeedback }) {
 
   return (
     <div className="card" style={{ textAlign: 'center', padding: '3rem' }}>
-      <h2 style={{ fontSize: '1.2rem', marginBottom: '2rem', color: 'var(--nav-text)' }}>Round {round} of {maxRounds}</h2>
-      <h2 style={{ fontSize: '1.5rem', marginBottom: '2rem' }}>What comes next in the pattern?</h2>
+      <h2 style={{ fontSize: '1.2rem', marginBottom: '2rem', color: 'var(--nav-text)' }}>{t('games.round')} {round} {t('games.of')} {maxRounds}</h2>
+      <h2 style={{ fontSize: '1.5rem', marginBottom: '2rem' }}>{t('games.whatComesNext')}</h2>
       
       <div style={{ display: 'flex', justifyContent: 'center', gap: '1.5rem', fontSize: '3rem', marginBottom: '3rem', color: 'var(--primary-color)' }}>
         {pattern.map((p, i) => <span key={i}>{p}</span>)}
@@ -476,7 +481,7 @@ function PatternRecall({ onComplete, soundEnabled, triggerFeedback }) {
           style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', backgroundColor: 'rgba(39, 103, 73, 0.1)', border: 'none', color: 'var(--primary-color)', padding: '0.6rem 1.5rem', borderRadius: '8px', fontSize: '1rem', cursor: 'pointer', fontWeight: 'bold' }}
         >
           <RefreshCw size={18} />
-          Restart Game
+          {t('games.restartGame')}
         </button>
       </div>
 
@@ -489,10 +494,10 @@ function PatternRecall({ onComplete, soundEnabled, triggerFeedback }) {
           startTime.current = Date.now();
           generatePattern();
         }}
-        title="Restart this activity?"
-        message="Your current progress will be lost."
-        confirmText="Restart Game"
-        cancelText="Keep Playing"
+        title={t('games.restartActivity')}
+        message={t('games.progressLost')}
+        confirmText={t('games.restartGame')}
+        cancelText={t('games.keepPlaying')}
       />
     </div>
   );
@@ -502,6 +507,7 @@ function PatternRecall({ onComplete, soundEnabled, triggerFeedback }) {
    Attention Test
 ========================================================================= */
 function AttentionTest({ onComplete, soundEnabled, triggerFeedback }) {
+  const { t } = useLanguage();
   const [round, setRound] = useState(0);
   const [currentObject, setCurrentObject] = useState(null);
   const [correctTaps, setCorrectTaps] = useState(0);
@@ -570,8 +576,8 @@ function AttentionTest({ onComplete, soundEnabled, triggerFeedback }) {
   return (
     <div className="card" style={{ textAlign: 'center', padding: '3rem', minHeight: '400px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
       <div>
-        <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>Attention Test</h2>
-        <p style={{ fontSize: '1.2rem', marginBottom: '2rem' }}>Tap the button <strong>ONLY</strong> when you see the <strong>BLUE CIRCLE (🔵)</strong>.</p>
+        <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>{t('games.attentionTest')}</h2>
+        <p style={{ fontSize: '1.2rem', marginBottom: '2rem' }}>{t('games.tapOnlyBlueCircle')}</p>
       </div>
 
       <div style={{ height: '150px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -581,7 +587,7 @@ function AttentionTest({ onComplete, soundEnabled, triggerFeedback }) {
       </div>
 
       <button onClick={handleTap} disabled={gameState === 'finished' || !currentObject} style={{ fontSize: '1.5rem', padding: '1.5rem', marginTop: '2rem' }}>
-        TAP HERE
+        {t('games.tapHere')}
       </button>
 
       <div style={{ textAlign: 'center', marginTop: '2rem' }}>
@@ -596,7 +602,7 @@ function AttentionTest({ onComplete, soundEnabled, triggerFeedback }) {
           style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', backgroundColor: 'rgba(39, 103, 73, 0.1)', border: 'none', color: 'var(--primary-color)', padding: '0.6rem 1.5rem', borderRadius: '8px', fontSize: '1rem', cursor: 'pointer', fontWeight: 'bold' }}
         >
           <RefreshCw size={18} />
-          Restart Game
+          {t('games.restartGame')}
         </button>
       </div>
 
@@ -604,10 +610,10 @@ function AttentionTest({ onComplete, soundEnabled, triggerFeedback }) {
         isOpen={isRestartModalOpen} 
         onClose={() => setIsRestartModalOpen(false)}
         onConfirm={restart}
-        title="Restart this activity?"
-        message="Your current progress will be lost."
-        confirmText="Restart Game"
-        cancelText="Keep Playing"
+        title={t('games.restartActivity')}
+        message={t('games.progressLost')}
+        confirmText={t('games.restartGame')}
+        cancelText={t('games.keepPlaying')}
       />
     </div>
   );
@@ -617,6 +623,7 @@ function AttentionTest({ onComplete, soundEnabled, triggerFeedback }) {
    Main GameView Controller
 ========================================================================= */
 function FeedbackOverlay({ message }) {
+  const { t } = useLanguage();
   if (!message) return null;
   const isCorrect = message === 'correct';
   return (
@@ -631,7 +638,7 @@ function FeedbackOverlay({ message }) {
       display: 'flex', alignItems: 'center', gap: '0.5rem',
       animation: 'fadeIn 0.2s ease-in-out'
     }}>
-      {isCorrect ? '✓ Correct' : '✗ Incorrect'}
+      {isCorrect ? t('games.correctAns') : t('games.incorrectAns')}
     </div>
   );
 }
@@ -640,6 +647,7 @@ export default function GameView() {
   const { gameId } = useParams();
   const navigate = useNavigate();
   const { soundEnabled } = useAccessibility();
+  const { t } = useLanguage();
   const [feedbackMessage, setFeedbackMessage] = useState(null);
 
   const showFeedback = (isCorrect) => {
@@ -677,8 +685,8 @@ export default function GameView() {
       default:
         return (
           <div className="container" style={{ textAlign: 'center', marginTop: '4rem' }}>
-            <h2>Game Not Found</h2>
-            <button onClick={() => navigate('/games')}>Return to Games</button>
+            <h2>{t('games.gameNotFound')}</h2>
+            <button onClick={() => navigate('/games')}>{t('games.returnToGames')}</button>
           </div>
         );
     }
@@ -688,7 +696,7 @@ export default function GameView() {
     <div style={{ position: 'relative' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <button onClick={() => navigate('/games')} style={{ backgroundColor: 'var(--secondary-color)', color: 'var(--text-color)', border: '2px solid var(--text-color)' }}>
-          Quit Game
+          {t('games.quitGame')}
         </button>
       </div>
       <FeedbackOverlay message={feedbackMessage} />

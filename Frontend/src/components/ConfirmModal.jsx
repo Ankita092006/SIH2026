@@ -1,7 +1,11 @@
 import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
 
-export default function ConfirmModal({ isOpen, onClose, onConfirm, title, message, confirmText = "Confirm", cancelText = "Cancel" }) {
+export default function ConfirmModal({ isOpen, onClose, onConfirm, title, message, confirmText, cancelText }) {
+  const { t } = useLanguage();
+  const actualConfirmText = confirmText || t('common.confirm');
+  const actualCancelText = cancelText || t('common.cancel');
   const modalRef = useRef(null);
   const confirmBtnRef = useRef(null);
 
@@ -119,7 +123,7 @@ export default function ConfirmModal({ isOpen, onClose, onConfirm, title, messag
               borderRadius: '8px'
             }}
           >
-            {cancelText}
+            {actualCancelText}
           </button>
           <button 
             ref={confirmBtnRef}
@@ -137,7 +141,7 @@ export default function ConfirmModal({ isOpen, onClose, onConfirm, title, messag
               borderRadius: '8px'
             }}
           >
-            {confirmText}
+            {actualConfirmText}
           </button>
         </div>
       </div>

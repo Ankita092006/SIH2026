@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { getReminders, addReminder, updateReminder, deleteReminder } from '../services/reminderService';
 import { CheckCircle2, Circle, Clock, Plus, Trash2, Edit2, X } from 'lucide-react';
+import { useLanguage } from '../context/LanguageContext';
+import { formatReminderTime } from '../utils/timeUtils';
 
 export default function Reminders() {
+  const { t, language } = useLanguage();
   const [reminders, setReminders] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   
@@ -88,9 +91,9 @@ export default function Reminders() {
   return (
     <div>
       <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-        <h1 style={{ fontSize: '2.5rem', margin: 0 }}>My Reminders</h1>
+        <h1 style={{ fontSize: '2.5rem', margin: 0 }}>{t('reminders.myReminders')}</h1>
         <button onClick={openAddModal} style={{ padding: '0.8rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <Plus /> Add Reminder
+          <Plus /> {t('reminders.addReminder')}
         </button>
       </div>
 
@@ -98,18 +101,18 @@ export default function Reminders() {
         <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0,0,0,0.5)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
           <div className="card" style={{ width: '100%', maxWidth: '500px', margin: 0, maxHeight: '90vh', overflowY: 'auto' }}>
             <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
-              <h2 style={{ margin: 0, fontSize: '1.8rem' }}>{editingId ? "Edit Reminder" : "Add Reminder"}</h2>
+              <h2 style={{ margin: 0, fontSize: '1.8rem' }}>{editingId ? t('reminders.editReminder') : t('reminders.addReminder')}</h2>
               <button onClick={() => setIsModalOpen(false)} style={{ background: 'transparent', border: 'none', color: 'black', padding: '0.5rem' }}><X /></button>
             </div>
             
             <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
               <div>
-                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '1.2rem' }}>What do you need to do?</label>
-                <input type="text" value={newTitle} onChange={e => setNewTitle(e.target.value)} required style={{ width: '100%', padding: '1rem', fontSize: '1.2rem', boxSizing: 'border-box' }} placeholder="e.g. Take Medication" />
+                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '1.2rem' }}>{t('reminders.whatToDo')}</label>
+                <input type="text" value={newTitle} onChange={e => setNewTitle(e.target.value)} required style={{ width: '100%', padding: '1rem', fontSize: '1.2rem', boxSizing: 'border-box' }} placeholder={t('reminders.takeMedication')} />
               </div>
               
               <div>
-                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '1.2rem' }}>Time</label>
+                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '1.2rem' }}>{t('reminders.time')}</label>
                 <div style={{ display: 'flex', gap: '1rem' }}>
                   <select value={newHour} onChange={e => setNewHour(e.target.value)} style={{ padding: '1rem', fontSize: '1.2rem', flex: 1 }}>
                     {hours.map(h => <option key={h} value={h}>{h}</option>)}
@@ -126,21 +129,21 @@ export default function Reminders() {
               </div>
 
               <div>
-                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '1.2rem' }}>Date</label>
+                <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '0.5rem', fontSize: '1.2rem' }}>{t('reminders.date')}</label>
                 <select value={newDate} onChange={e => setNewDate(e.target.value)} style={{ width: '100%', padding: '1rem', fontSize: '1.2rem', boxSizing: 'border-box' }}>
-                  <option value="Today">Today</option>
-                  <option value="Tomorrow">Tomorrow</option>
-                  <option value="Everyday">Everyday</option>
+                  <option value="Today">{t('common.today')}</option>
+                  <option value="Tomorrow">{t('common.tomorrow')}</option>
+                  <option value="Everyday">{t('reminders.everyday')}</option>
                 </select>
               </div>
-              <button type="submit" style={{ marginTop: '1rem', width: '100%', padding: '1.2rem', fontSize: '1.5rem' }}>Save Reminder</button>
+              <button type="submit" style={{ marginTop: '1rem', width: '100%', padding: '1.2rem', fontSize: '1.5rem' }}>{t('reminders.saveReminder')}</button>
             </form>
           </div>
         </div>
       )}
 
       {reminders.length === 0 ? (
-        <p style={{ fontSize: '1.5rem', textAlign: 'center' }}>You have no reminders. Add one to get started.</p>
+        <p style={{ fontSize: '1.5rem', textAlign: 'center' }}>{t('reminders.noReminders')}</p>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
           {reminders.map(reminder => (
@@ -165,10 +168,10 @@ export default function Reminders() {
               
               <div style={{ flex: '1 1 150px' }}>
                 <h2 style={{ fontSize: '1.5rem', margin: '0 0 0.5rem 0', textDecoration: reminder.status === 'completed' ? 'line-through' : 'none' }}>
-                  {reminder.text}
+                  {reminder.translationKey ? t(reminder.translationKey) : reminder.text}
                 </h2>
                 <p style={{ margin: 0, fontSize: '1.2rem', color: 'var(--nav-text)' }}>
-                  {reminder.date} • {reminder.time}
+                  {reminder.date === 'Today' ? t('common.today') : (reminder.date === 'Tomorrow' ? t('common.tomorrow') : (reminder.date === 'Everyday' ? t('reminders.everyday') : reminder.date))} • {formatReminderTime(reminder.time, language)}
                 </p>
               </div>
 

@@ -2,6 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { cognitiveGames } from '../data/mockData';
 import { NERMemoryIcon, NERPatternIcon, NERAttentionIcon, NERRecallIcon, NERGameIcon } from '../components/NERIcons';
+import { useLanguage } from '../context/LanguageContext';
 
 const getGameIcon = (id) => {
   switch(id) {
@@ -16,11 +17,12 @@ const getGameIcon = (id) => {
 
 export default function GameMenu() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
 
   return (
     <div>
-      <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', color: 'var(--primary-color)' }}>Cognitive Games</h1>
-      <p style={{ fontSize: '1.2rem', marginBottom: '2rem' }}>Select a game to exercise your memory, focus, and attention.</p>
+      <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', color: 'var(--primary-color)' }}>{t('games.title')}</h1>
+      <p style={{ fontSize: '1.2rem', marginBottom: '2rem' }}>{t('games.selectGame', 'Select a game to exercise your memory, focus, and attention.')}</p>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
         {cognitiveGames.map(game => {
@@ -33,21 +35,21 @@ export default function GameMenu() {
                   <Icon size={40} color="var(--primary-color)" />
                 </div>
                 <div>
-                  <h2 style={{ fontSize: '1.8rem', margin: 0 }}>{game.title}</h2>
+                  <h2 style={{ fontSize: '1.8rem', margin: 0 }}>{t(`games.${game.id.replace(/-([a-z])/g, g => g[1].toUpperCase())}`)}</h2>
                   <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
-                    <span style={{ fontSize: '1rem', fontWeight: 'bold', backgroundColor: '#e2e8f0', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>{game.difficulty}</span>
+                    <span style={{ fontSize: '1rem', fontWeight: 'bold', backgroundColor: '#e2e8f0', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>{t(`games.difficulty${game.difficulty}`)}</span>
                     <span style={{ fontSize: '1rem', color: 'var(--nav-text)' }}>⏱ {game.duration}</span>
                   </div>
                 </div>
               </div>
               
-              <p style={{ fontSize: '1.2rem', margin: 0 }}>{game.description}</p>
+              <p style={{ fontSize: '1.2rem', margin: 0 }}>{t(`games.${game.id.replace(/-([a-z])/g, g => g[1].toUpperCase())}Desc`)}</p>
               
               <button 
                 onClick={() => navigate(`/games/${game.id}/instructions`)} 
                 style={{ width: '100%', padding: '1rem', marginTop: '0.5rem', fontSize: '1.2rem' }}
               >
-                Start Game
+                {t('home.startGame')}
               </button>
             </div>
           );

@@ -14,6 +14,8 @@ import { getGameResults, saveGameResult } from './services/gameService';
 import { getReminders, saveReminders } from './services/reminderService';
 import { patientResults, remindersData } from './data/mockData';
 
+import { LanguageProvider } from './context/LanguageContext';
+
 // A wrapper component to conditionally show the NavBar
 const AppLayout = ({ children }) => {
   const location = useLocation();
@@ -60,8 +62,9 @@ function App() {
   }, []);
 
   return (
-    <BrowserRouter>
-      <AppLayout>
+    <LanguageProvider>
+      <BrowserRouter>
+        <AppLayout>
         <Routes>
           <Route path="/" element={<Navigate to="/login" />} />
           <Route path="/login" element={<Login />} />
@@ -75,7 +78,8 @@ function App() {
           <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
         </Routes>
       </AppLayout>
-    </BrowserRouter>
+      </BrowserRouter>
+    </LanguageProvider>
   );
 }
 

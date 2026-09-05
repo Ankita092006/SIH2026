@@ -83,6 +83,7 @@ export const remindersData = [
   {
     id: 1,
     text: "Take evening blood pressure medication",
+    translationKey: "reminders.takeMedication",
     time: "6:00 PM",
     date: "Today",
     status: "pending"
@@ -90,6 +91,7 @@ export const remindersData = [
   {
     id: 2,
     text: "Drink a glass of water",
+    translationKey: "reminders.drinkWater",
     time: "2:00 PM",
     date: "Today",
     status: "completed"
@@ -97,6 +99,7 @@ export const remindersData = [
   {
     id: 3,
     text: "Morning walk (15 mins)",
+    translationKey: "reminders.morningWalk",
     time: "8:00 AM",
     date: "Today",
     status: "completed"
@@ -104,6 +107,7 @@ export const remindersData = [
   {
     id: 4,
     text: "Upcoming Doctor Appointment",
+    translationKey: "reminders.upcomingDoc",
     time: "10:00 AM",
     date: "Tomorrow",
     status: "upcoming"

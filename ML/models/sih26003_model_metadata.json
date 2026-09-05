@@ -10,6 +10,10 @@
         4,
         5
     ],
+    "adaptive_thresholds": {
+        "decrease_below": 0.549,
+        "increase_at_or_above": 0.632
+    },
     "features": [
         "game_type",
         "cognitive_domain",
@@ -24,7 +28,7 @@
         "response_time_trend",
         "consecutive_successes"
     ],
-    "test_accuracy": 0.975,
-    "mae": 0.025,
-    "group_cv_accuracy": 0.9806
+    "test_accuracy": 0.891,
+    "mae": 0.109,
+    "group_cv_accuracy": 0.8824
 }

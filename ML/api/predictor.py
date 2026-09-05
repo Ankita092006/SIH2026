@@ -1,5 +1,22 @@
-from pathlib import Path
+import pandas as pd
 
 
-BASE_DIR = Path(__file__).resolve().parent
-MODEL_PATH = BASE_DIR.parent / "models" / "sih26003_adaptive_difficulty_v2.pkl"
+class Predictor:
+    def __init__(self, model):
+        self.model = model
+
+    def predict(self, data):
+        features = pd.DataFrame([data])
+
+        prediction = int(self.model.predict(features)[0])
+
+        # Safety bound: difficulty must always be 1–5
+        prediction = max(1, min(5, prediction))
+
+        probabilities = self.model.predict_proba(features)[0]
+        confidence = float(max(probabilities))
+
+        return {
+            "next_difficulty": prediction,
+            "confidence": confidence
+        }

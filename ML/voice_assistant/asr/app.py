@@ -1,7 +1,9 @@
 import gradio as gr
+import spaces
 from asr import transcribe_audio
 
 
+@spaces.GPU
 def transcribe(audio):
     if audio is None:
         return ""

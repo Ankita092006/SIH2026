@@ -1,0 +1,42 @@
+{
+  "project": "SIH26003",
+  "component": "voice_intent_classifier",
+  "model": "paraphrase-multilingual-MiniLM-L12-v2",
+  "classifier": "semantic prototypes",
+  "safety_threshold": 0.47,
+  "dataset_size": 325,
+  "intents": [
+    "CHANGE_LANGUAGE",
+    "GO_BACK",
+    "GO_HOME",
+    "HELP",
+    "NEXT",
+    "REPEAT",
+    "SET_REMINDER",
+    "SHOW_HISTORY",
+    "SHOW_REMINDERS",
+    "SHOW_SCORE",
+    "START_ATTENTION_GAME",
+    "START_MEMORY_GAME",
+    "START_RECALL_GAME",
+    "STOP_GAME",
+    "UNKNOWN"
+  ],
+  "validation": {
+    "accuracy": 0.9591836734693877,
+    "macro_f1": 0.9555555555555556,
+    "weighted_f1": 0.9573696145124717
+  },
+  "test": {
+    "accuracy": 0.9387755102040817,
+    "macro_f1": 0.8941798941798942,
+    "weighted_f1": 0.952057013281503
+  },
+  "random_seed": 42,
+  "notes": [
+    "Prototypes were created using training data only.",
+    "Cosine similarity is used for intent matching.",
+    "Predictions below the safety threshold are rejected as UNKNOWN.",
+    "The classifier must not directly execute application actions."
+  ]
+}

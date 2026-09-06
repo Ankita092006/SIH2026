@@ -1,0 +1,326 @@
+text,intent
+start the memory game,START_MEMORY_GAME
+open the memory game,START_MEMORY_GAME
+let's play the memory game,START_MEMORY_GAME
+I want to play memory,START_MEMORY_GAME
+start memory practice,START_MEMORY_GAME
+begin the memory game,START_MEMORY_GAME
+play memory game,START_MEMORY_GAME
+can we start memory,START_MEMORY_GAME
+start memory,START_MEMORY_GAME
+open memory practice,START_MEMORY_GAME
+I want to practice memory,START_MEMORY_GAME
+let me play the memory game,START_MEMORY_GAME
+begin memory practice,START_MEMORY_GAME
+start a memory exercise,START_MEMORY_GAME
+can I play memory,START_MEMORY_GAME
+please start memory game,START_MEMORY_GAME
+I want the memory game,START_MEMORY_GAME
+take me to memory game,START_MEMORY_GAME
+start my memory exercise,START_MEMORY_GAME
+let's do memory practice,START_MEMORY_GAME
+begin the memory exercise,START_MEMORY_GAME
+play the memory exercise,START_MEMORY_GAME
+memory game please,START_MEMORY_GAME
+start the attention game,START_ATTENTION_GAME
+open the attention game,START_ATTENTION_GAME
+let's play the attention game,START_ATTENTION_GAME
+I want to play attention,START_ATTENTION_GAME
+start attention practice,START_ATTENTION_GAME
+begin the attention game,START_ATTENTION_GAME
+play attention game,START_ATTENTION_GAME
+can we start attention,START_ATTENTION_GAME
+start attention,START_ATTENTION_GAME
+open attention practice,START_ATTENTION_GAME
+I want to practice attention,START_ATTENTION_GAME
+let me play the attention game,START_ATTENTION_GAME
+begin attention practice,START_ATTENTION_GAME
+start an attention exercise,START_ATTENTION_GAME
+can I play attention,START_ATTENTION_GAME
+please start attention game,START_ATTENTION_GAME
+I want the attention game,START_ATTENTION_GAME
+take me to attention game,START_ATTENTION_GAME
+start my attention exercise,START_ATTENTION_GAME
+let's do attention practice,START_ATTENTION_GAME
+begin the attention exercise,START_ATTENTION_GAME
+play the attention exercise,START_ATTENTION_GAME
+attention game please,START_ATTENTION_GAME
+start the recall game,START_RECALL_GAME
+open the recall game,START_RECALL_GAME
+let's play the recall game,START_RECALL_GAME
+I want to play recall,START_RECALL_GAME
+start recall practice,START_RECALL_GAME
+begin the recall game,START_RECALL_GAME
+play recall game,START_RECALL_GAME
+can we start recall,START_RECALL_GAME
+start recall,START_RECALL_GAME
+open recall practice,START_RECALL_GAME
+I want to practice recall,START_RECALL_GAME
+let me play the recall game,START_RECALL_GAME
+begin recall practice,START_RECALL_GAME
+start a recall exercise,START_RECALL_GAME
+can I play recall,START_RECALL_GAME
+please start recall game,START_RECALL_GAME
+I want the recall game,START_RECALL_GAME
+take me to recall game,START_RECALL_GAME
+start my recall exercise,START_RECALL_GAME
+let's do recall practice,START_RECALL_GAME
+begin the recall exercise,START_RECALL_GAME
+play the recall exercise,START_RECALL_GAME
+recall game please,START_RECALL_GAME
+stop the game,STOP_GAME
+stop playing,STOP_GAME
+end the game,STOP_GAME
+quit the game,STOP_GAME
+exit the game,STOP_GAME
+I want to stop,STOP_GAME
+please stop the game,STOP_GAME
+stop this game,STOP_GAME
+finish the game,STOP_GAME
+leave the game,STOP_GAME
+cancel the game,STOP_GAME
+I want to quit,STOP_GAME
+end this activity,STOP_GAME
+stop the activity,STOP_GAME
+please end the game,STOP_GAME
+close the game,STOP_GAME
+go out of the game,STOP_GAME
+I don't want to play anymore,STOP_GAME
+stop playing this,STOP_GAME
+quit this activity,STOP_GAME
+finish playing,STOP_GAME
+end my game,STOP_GAME
+stop now,STOP_GAME
+repeat that,REPEAT
+say that again,REPEAT
+repeat please,REPEAT
+can you repeat,REPEAT
+please say it again,REPEAT
+I did not hear that,REPEAT
+say it one more time,REPEAT
+repeat the question,REPEAT
+repeat what you said,REPEAT
+again please,REPEAT
+tell me that again,REPEAT
+could you repeat that,REPEAT
+say that again please,REPEAT
+repeat once more,REPEAT
+I want to hear that again,REPEAT
+please repeat,REPEAT
+can you say that again,REPEAT
+repeat the instruction,REPEAT
+say it again,REPEAT
+one more time please,REPEAT
+repeat this,REPEAT
+again,REPEAT
+please say that again,REPEAT
+next,NEXT
+go to the next one,NEXT
+next question,NEXT
+show the next question,NEXT
+move to the next one,NEXT
+continue,NEXT
+go ahead,NEXT
+next please,NEXT
+give me the next one,NEXT
+next activity,NEXT
+continue to the next,NEXT
+show me another one,NEXT
+move ahead,NEXT
+go to next,NEXT
+next item,NEXT
+next exercise,NEXT
+continue please,NEXT
+I am ready for the next one,NEXT
+let's continue,NEXT
+take me forward,NEXT
+forward,NEXT
+next please,NEXT
+show next,NEXT
+help,HELP
+I need help,HELP
+please help me,HELP
+what should I do,HELP
+how does this work,HELP
+help me with this,HELP
+I need some help,HELP
+can you help,HELP
+show me how to play,HELP
+what do I do now,HELP
+give me instructions,HELP
+explain this,HELP
+how do I use this,HELP
+help please,HELP
+I don't understand,HELP
+what am I supposed to do,HELP
+can you guide me,HELP
+show instructions,HELP
+I need instructions,HELP
+tell me what to do,HELP
+how can I play,HELP
+please guide me,HELP
+assist me,HELP
+show my score,SHOW_SCORE
+what is my score,SHOW_SCORE
+tell me my score,SHOW_SCORE
+how did I score,SHOW_SCORE
+show the score,SHOW_SCORE
+what was my score,SHOW_SCORE
+my score please,SHOW_SCORE
+show me the score,SHOW_SCORE
+how many points did I get,SHOW_SCORE
+what did I score,SHOW_SCORE
+show current score,SHOW_SCORE
+tell me my points,SHOW_SCORE
+how many points,SHOW_SCORE
+what is my result,SHOW_SCORE
+show my current score,SHOW_SCORE
+give me my score,SHOW_SCORE
+can I see my score,SHOW_SCORE
+what was my result,SHOW_SCORE
+show points,SHOW_SCORE
+tell me the points,SHOW_SCORE
+score please,SHOW_SCORE
+how well did I score,SHOW_SCORE
+show score,SHOW_SCORE
+show my history,SHOW_HISTORY
+show my previous results,SHOW_HISTORY
+what were my past results,SHOW_HISTORY
+show my game history,SHOW_HISTORY
+tell me about my previous games,SHOW_HISTORY
+show previous scores,SHOW_HISTORY
+what did I do before,SHOW_HISTORY
+show my past performance,SHOW_HISTORY
+show earlier results,SHOW_HISTORY
+my history please,SHOW_HISTORY
+what have I done before,SHOW_HISTORY
+show old results,SHOW_HISTORY
+show my previous games,SHOW_HISTORY
+tell me my history,SHOW_HISTORY
+what were my earlier scores,SHOW_HISTORY
+show my performance history,SHOW_HISTORY
+look at my past games,SHOW_HISTORY
+show past performance,SHOW_HISTORY
+what were my results before,SHOW_HISTORY
+show previous performance,SHOW_HISTORY
+see my history,SHOW_HISTORY
+past results please,SHOW_HISTORY
+show game history,SHOW_HISTORY
+set a reminder,SET_REMINDER
+remind me,SET_REMINDER
+create a reminder,SET_REMINDER
+I want to set a reminder,SET_REMINDER
+please remind me,SET_REMINDER
+make a reminder,SET_REMINDER
+add a reminder,SET_REMINDER
+set a new reminder,SET_REMINDER
+remind me about this,SET_REMINDER
+can you remind me,SET_REMINDER
+I need a reminder,SET_REMINDER
+schedule a reminder,SET_REMINDER
+please set a reminder,SET_REMINDER
+create a new reminder,SET_REMINDER
+add something to my reminders,SET_REMINDER
+set reminder please,SET_REMINDER
+remind me later,SET_REMINDER
+make me a reminder,SET_REMINDER
+I want a reminder,SET_REMINDER
+put this in my reminders,SET_REMINDER
+schedule something for me,SET_REMINDER
+remember to remind me,SET_REMINDER
+add reminder,SET_REMINDER
+show my reminders,SHOW_REMINDERS
+what are my reminders,SHOW_REMINDERS
+list my reminders,SHOW_REMINDERS
+show reminders,SHOW_REMINDERS
+tell me my reminders,SHOW_REMINDERS
+what reminders do I have,SHOW_REMINDERS
+see my reminders,SHOW_REMINDERS
+display reminders,SHOW_REMINDERS
+show all reminders,SHOW_REMINDERS
+what have I been reminded about,SHOW_REMINDERS
+open my reminders,SHOW_REMINDERS
+check my reminders,SHOW_REMINDERS
+give me my reminders,SHOW_REMINDERS
+reminders please,SHOW_REMINDERS
+show reminder list,SHOW_REMINDERS
+what is on my reminder list,SHOW_REMINDERS
+can I see my reminders,SHOW_REMINDERS
+look at my reminders,SHOW_REMINDERS
+list all reminders,SHOW_REMINDERS
+display my reminder list,SHOW_REMINDERS
+my reminders,SHOW_REMINDERS
+check reminder,SHOW_REMINDERS
+show reminder list please,SHOW_REMINDERS
+go home,GO_HOME
+take me home,GO_HOME
+open the home screen,GO_HOME
+return home,GO_HOME
+back to home,GO_HOME
+go to home,GO_HOME
+show home,GO_HOME
+home screen please,GO_HOME
+take me to the home page,GO_HOME
+return to the main screen,GO_HOME
+go back to home,GO_HOME
+open home,GO_HOME
+I want to go home,GO_HOME
+bring me home,GO_HOME
+home please,GO_HOME
+return to home screen,GO_HOME
+go to main screen,GO_HOME
+show the home screen,GO_HOME
+take me back home,GO_HOME
+main screen,GO_HOME
+back home,GO_HOME
+go home please,GO_HOME
+open the main page,GO_HOME
+go back,GO_BACK
+take me back,GO_BACK
+return to the previous screen,GO_BACK
+back please,GO_BACK
+go to the previous page,GO_BACK
+return back,GO_BACK
+previous screen,GO_BACK
+go backward,GO_BACK
+take me to the previous page,GO_BACK
+I want to go back,GO_BACK
+return to the last screen,GO_BACK
+back to the previous screen,GO_BACK
+show previous screen,GO_BACK
+go to previous,GO_BACK
+move back,GO_BACK
+please go back,GO_BACK
+back one screen,GO_BACK
+return to previous,GO_BACK
+previous page please,GO_BACK
+take me back one step,GO_BACK
+go back one step,GO_BACK
+previous,GO_BACK
+back,GO_BACK
+change language,CHANGE_LANGUAGE
+switch language,CHANGE_LANGUAGE
+I want to change the language,CHANGE_LANGUAGE
+change the language,CHANGE_LANGUAGE
+select another language,CHANGE_LANGUAGE
+use another language,CHANGE_LANGUAGE
+switch to another language,CHANGE_LANGUAGE
+language settings,CHANGE_LANGUAGE
+change my language,CHANGE_LANGUAGE
+set a different language,CHANGE_LANGUAGE
+choose another language,CHANGE_LANGUAGE
+I want another language,CHANGE_LANGUAGE
+change language please,CHANGE_LANGUAGE
+switch language please,CHANGE_LANGUAGE
+use a different language,CHANGE_LANGUAGE
+open language settings,CHANGE_LANGUAGE
+show language options,CHANGE_LANGUAGE
+select language,CHANGE_LANGUAGE
+change the app language,CHANGE_LANGUAGE
+set language,CHANGE_LANGUAGE
+language change,CHANGE_LANGUAGE
+I want to switch languages,CHANGE_LANGUAGE
+choose a language,CHANGE_LANGUAGE
+call my son,UNKNOWN
+open YouTube,UNKNOWN
+what time is it,UNKNOWN

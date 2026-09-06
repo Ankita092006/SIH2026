@@ -16,11 +16,13 @@ ALLOWED_ACTIONS = {
 }
 
 
-def get_action(intent: str):
+def get_action(intent: str, similarity: float = 0.0):
     """
     Convert a recognized intent into an allowed application action.
     Unknown or unsupported intents are rejected.
     """
+    if similarity < 0.47:
+        return None
 
     return ALLOWED_ACTIONS.get(intent)
 

@@ -9,7 +9,7 @@ def process_audio(audio_path: str):
     result = predict_intent(text)
 
     intent = result["intent"]
-    action = get_action(intent)
+    action = get_action(intent, result["similarity"])
 
     print(f"Transcription: {text}")
     print(f"Intent: {intent}")

@@ -1,0 +1,6 @@
+gradio
+transformers
+torch
+soundfile
+librosa
+accelerate

@@ -1,0 +1,34 @@
+{
+    "model_name": "SIH26003 Adaptive Difficulty Model",
+    "version": "2.0",
+    "algorithm": "Random Forest",
+    "target": "next_difficulty",
+    "difficulty_levels": [
+        1,
+        2,
+        3,
+        4,
+        5
+    ],
+    "adaptive_thresholds": {
+        "decrease_below": 0.549,
+        "increase_at_or_above": 0.632
+    },
+    "features": [
+        "game_type",
+        "cognitive_domain",
+        "current_difficulty",
+        "accuracy",
+        "response_time",
+        "attempts",
+        "hints_used",
+        "recent_accuracy",
+        "recent_response_time",
+        "accuracy_trend",
+        "response_time_trend",
+        "consecutive_successes"
+    ],
+    "test_accuracy": 0.891,
+    "mae": 0.109,
+    "group_cv_accuracy": 0.8824
+}

@@ -1,12 +1,12 @@
 const mongoose = require('mongoose');
 
 // ==========================================
-// SCORE SCHEMA
+// GAME RESULT SCHEMA
 // ==========================================
 
-const scoreSchema = new mongoose.Schema(
+const gameResultSchema = new mongoose.Schema(
   {
-    // Patient who achieved the score
+    // Patient who played the game
     patient: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
@@ -27,8 +27,8 @@ const scoreSchema = new mongoose.Schema(
       min: 0
     },
 
-    // Total possible score
-    maxScore: {
+    // Total questions
+    totalQuestions: {
       type: Number,
       required: true,
       min: 0
@@ -37,21 +37,22 @@ const scoreSchema = new mongoose.Schema(
     // Correct answers
     correctAnswers: {
       type: Number,
-      default: 0,
+      required: true,
       min: 0
     },
 
-    // Total questions
-    totalQuestions: {
+    // Accuracy percentage
+    accuracy: {
       type: Number,
-      default: 0,
-      min: 0
+      required: true,
+      min: 0,
+      max: 100
     },
 
     // Time taken in seconds
     timeTaken: {
       type: Number,
-      default: 0,
+      required: true,
       min: 0
     },
 
@@ -66,7 +67,7 @@ const scoreSchema = new mongoose.Schema(
       default: 'completed'
     },
 
-    // Date of playing
+    // Game session date
     playedAt: {
       type: Date,
       default: Date.now
@@ -81,9 +82,9 @@ const scoreSchema = new mongoose.Schema(
 // EXPORT MODEL
 // ==========================================
 
-const Score = mongoose.model(
-  'Score',
-  scoreSchema
+const GameResult = mongoose.model(
+  'GameResult',
+  gameResultSchema
 );
 
-module.exports = Score;
+module.exports = GameResult;

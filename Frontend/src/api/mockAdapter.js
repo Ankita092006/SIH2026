@@ -241,7 +241,7 @@ export async function handleMockRequest(endpoint, options = {}) {
       data: {
         success: true,
         message: "Login successful",
-        token: "mock_jwt_token_" + Buffer.from(JSON.stringify(user)).toString('base64'),
+        token: "mock_jwt_token_" + (typeof btoa !== 'undefined' ? btoa(unescape(encodeURIComponent(JSON.stringify(user)))) : 'fallback_token'),
         user: {
           id: user.id,
           name: user.name,
@@ -274,7 +274,7 @@ export async function handleMockRequest(endpoint, options = {}) {
       data: {
         success: true,
         message: "User registered successfully",
-        token: "mock_jwt_token_" + Buffer.from(JSON.stringify(newUser)).toString('base64'),
+        token: "mock_jwt_token_" + (typeof btoa !== 'undefined' ? btoa(unescape(encodeURIComponent(JSON.stringify(newUser)))) : 'fallback_token'),
         user: {
           id: newUser.id,
           name: newUser.name,

@@ -167,8 +167,9 @@ a:hover:not(.nav-item), a:focus:not(.nav-item) {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 10px;
-  line-height: 1.1;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
   text-align: center;
 }
 .nav-item:hover {

@@ -4,8 +4,10 @@ const path = require("path");
 const testSuites = [
   { name: "Database Foundation", file: path.join(__dirname, "../db/test_db_foundation.js") },
   { name: "Server Lifecycle & Shutdown", file: path.join(__dirname, "../test_server_lifecycle.js") },
-  { name: "Authentication & JWT API", file: path.join(__dirname, "auth.test.js") }
+  { name: "Authentication & JWT API", file: path.join(__dirname, "auth.test.js") },
+  { name: "Security, Validation & RBAC", file: path.join(__dirname, "security.test.js") }
 ];
+
 
 console.log("============================================================");
 console.log("🚀 EXECUTING COMPLETE BACKEND TEST SUITE");

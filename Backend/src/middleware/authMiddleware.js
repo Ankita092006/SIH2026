@@ -67,20 +67,7 @@ async function protect(req, res, next) {
   }
 }
 
-/**
- * Middleware to restrict route access by role
- */
-function authorize(...allowedRoles) {
-  return (req, res, next) => {
-    if (!req.user || !allowedRoles.includes(req.user.role)) {
-      return res.status(403).json({
-        success: false,
-        message: `Forbidden: Access requires one of the following roles: [${allowedRoles.join(", ")}]`
-      });
-    }
-    next();
-  };
-}
+const { authorize } = require("./rbac.middleware");
 
 module.exports = {
   protect,

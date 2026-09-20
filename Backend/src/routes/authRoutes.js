@@ -1,45 +1,35 @@
-const express = require('express');
-
+const express = require("express");
 const router = express.Router();
 
-// Import controller functions
 const {
   register,
   login,
   getMe,
   logout
-} = require('../controllers/authController');
+} = require("../controllers/authController");
 
-// Import authentication middleware
-const {
-  protect
-} = require('../middleware/authMiddleware');
-
+const { protect } = require("../middleware/authMiddleware");
+const { authLimiter } = require("../middleware/rateLimit.middleware");
+const { validate, registerSchema, loginSchema } = require("../validators");
 
 // ==========================================
-// PUBLIC ROUTES
+// PUBLIC AUTHENTICATION ROUTES
 // ==========================================
 
-// Register new user
-router.post('/register', register);
+// Register new user (rate limited + validated)
+router.post("/register", authLimiter, validate(registerSchema), register);
 
-// Login user
-router.post('/login', login);
-
+// Login user (rate limited + validated)
+router.post("/login", authLimiter, validate(loginSchema), login);
 
 // ==========================================
-// PROTECTED ROUTES
+// PROTECTED AUTHENTICATION ROUTES
 // ==========================================
 
-// Get current logged-in user
-router.get('/me', protect, getMe);
+// Get current logged-in user profile
+router.get("/me", protect, getMe);
 
 // Logout user
-router.post('/logout', protect, logout);
-
-
-// ==========================================
-// EXPORT ROUTER
-// ==========================================
+router.post("/logout", protect, logout);
 
 module.exports = router;

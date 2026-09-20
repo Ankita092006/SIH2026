@@ -5,7 +5,10 @@ export const translations = {
       games: "Games",
       history: "History",
       reminders: "Reminders",
-      profile: "Profile"
+      profile: "Profile",
+      memory: "Memory",
+      voice: "Voice",
+      caregiver: "Caregiver"
     },
     common: {
       save: "Save",
@@ -207,7 +210,10 @@ export const translations = {
       games: "খেলসমূহ",
       history: "ইতিহাস",
       reminders: "সোঁৱৰণী",
-      profile: "প্ৰ'ফাইল"
+      profile: "প্ৰ'ফাইল",
+      memory: "স্মৃতি",
+      voice: "কণ্ঠ",
+      caregiver: "সেৱক"
     },
     common: {
       save: "ছেভ কৰক",

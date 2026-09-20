@@ -167,8 +167,9 @@ a:hover:not(.nav-item), a:focus:not(.nav-item) {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 10px;
-  line-height: 1.1;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
   text-align: center;
 }
 .nav-item:hover {
@@ -335,4 +336,141 @@ input:checked + .toggle-slider:before {
     line-height: 1.1;
     text-align: center;
   }
+}
+
+/* Caregiver Module Portal Styles */
+.caregiver-dashboard {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.caregiver-header {
+  margin-bottom: 24px;
+}
+
+.caregiver-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #64748b;
+  text-transform: uppercase;
+  margin: 0 0 4px 0;
+}
+
+.caregiver-header h1 {
+  font-size: 2rem;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+}
+
+.caregiver-header p {
+  color: #64748b;
+  margin: 0;
+}
+
+.caregiver-welcome-card {
+  background: linear-gradient(135deg, #1e293b, #334155);
+  color: #ffffff;
+  padding: 24px;
+  border-radius: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+}
+
+.caregiver-welcome-card h2 {
+  margin: 0 0 6px 0;
+  font-size: 1.5rem;
+}
+
+.caregiver-welcome-card p {
+  margin: 0;
+  color: #cbd5e1;
+}
+
+.caregiver-section {
+  margin-bottom: 28px;
+}
+
+.caregiver-section h2 {
+  font-size: 1.3rem;
+  color: #1e293b;
+  margin-bottom: 16px;
+}
+
+.caregiver-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.caregiver-stat-card {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 14px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px solid #e2e8f0;
+}
+
+.caregiver-stat-card span {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.caregiver-stat-card strong {
+  font-size: 1.25rem;
+  color: #1e293b;
+}
+
+.caregiver-module-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.caregiver-module-card {
+  background: #ffffff;
+  padding: 20px;
+  border-radius: 14px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.06);
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  text-decoration: none;
+  color: #1e293b;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.caregiver-module-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+  border-color: #cbd5e1;
+}
+
+.caregiver-module-icon {
+  background: #f1f5f9;
+  color: #276749;
+  padding: 12px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.caregiver-module-card h3 {
+  margin: 0 0 4px 0;
+  font-size: 1.1rem;
+}
+
+.caregiver-module-card p {
+  margin: 0;
+  font-size: 0.9rem;
+  color: #64748b;
 }

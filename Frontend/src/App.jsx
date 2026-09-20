@@ -1,5 +1,6 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+
 import Login from './pages/Login';
 import Register from './pages/Register';
 import ForgotPassword from './pages/ForgotPassword';
@@ -12,15 +13,28 @@ import Results from './pages/Results';
 import ResultsHistory from './pages/ResultsHistory';
 import Reminders from './pages/Reminders';
 import Profile from './pages/Profile';
+
 import MemoryVault from './pages/MemoryVault';
 import VoiceAssistantPage from './pages/VoiceAssistantPage';
-import CaregiverDashboard from './pages/CaregiverDashboard';
 import Unauthorized from './pages/Unauthorized';
 import NotFound from './pages/NotFound';
+
+import CaregiverLayout from './pages/caregiver/CaregiverLayout';
+import CaregiverDashboard from './pages/caregiver/CaregiverDashboard';
+import PatientProfile from './pages/caregiver/PatientProfile';
+import Trends from './pages/caregiver/Trends';
+import Adherence from './pages/caregiver/Adherence';
+import Alerts from './pages/caregiver/Alerts';
+import MemoryLibrary from './pages/caregiver/MemoryLibrary';
+import CaregiverInsights from './pages/CaregiverDashboard';
 
 import NavBar from './components/NavBar';
 import SkipLink from './components/common/SkipLink';
 import OfflineBanner from './components/common/OfflineBanner';
+
+import { getGameResults, saveGameResult } from './services/gameService';
+import { getReminders, saveReminders } from './services/reminderService';
+import { patientResults, remindersData } from './data/mockData';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { LanguageProvider } from './context/LanguageContext';
@@ -29,17 +43,31 @@ import { AccessibilityProvider } from './context/AccessibilityContext';
 // App Layout wrapper to control navigation bar display
 const AppLayout = ({ children }) => {
   const location = useLocation();
+
   const hideNavBarPaths = [
     '/login',
     '/register',
     '/forgot-password',
     '/reset-password',
-    '/play',
+    '/games/',
     '/instructions',
+    '/play',
     '/unauthorized'
   ];
-  const shouldShowNavBar = !hideNavBarPaths.some(path => location.pathname.includes(path)) || location.pathname === '/games';
-  const isAuthPage = ['/login', '/register', '/forgot-password', '/reset-password'].includes(location.pathname);
+
+  const shouldShowNavBar =
+    !hideNavBarPaths.some(path => location.pathname.includes(path)) ||
+    location.pathname === '/games';
+
+  const isAuthPage = [
+    '/login',
+    '/register',
+    '/forgot-password',
+    '/reset-password'
+  ].includes(location.pathname);
+
+  // Caregiver pages have their own navigation
+  const isCaregiver = location.pathname.startsWith('/caregiver');
 
   return (
     <div className="app-container">
@@ -48,7 +76,7 @@ const AppLayout = ({ children }) => {
       <main id="main-content" className="main-content" tabIndex="-1">
         {children}
       </main>
-      {!isAuthPage && shouldShowNavBar && <NavBar />}
+      {!isAuthPage && shouldShowNavBar && !isCaregiver && <NavBar />}
     </div>
   );
 };
@@ -73,6 +101,30 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 };
 
 function App() {
+  useEffect(() => {
+    // Seed initial mock data if not already present
+    if (getGameResults().length === 0) {
+      [...patientResults].reverse().forEach(res => {
+        saveGameResult({
+          gameId: res.gameId,
+          score: res.score,
+          accuracy: res.accuracy,
+          timeTaken: res.timeTaken,
+          summary: res.summary
+        });
+      });
+    }
+
+    if (getReminders().length === 0) {
+      saveReminders(
+        remindersData.map(r => ({
+          ...r,
+          id: r.id.toString()
+        }))
+      );
+    }
+  }, []);
+
   return (
     <AccessibilityProvider>
       <LanguageProvider>
@@ -101,15 +153,24 @@ function App() {
                 <Route path="/memory" element={<ProtectedRoute><MemoryVault /></ProtectedRoute>} />
                 <Route path="/voice" element={<ProtectedRoute><VoiceAssistantPage /></ProtectedRoute>} />
 
-                {/* Role-Based Caregiver Route */}
+                {/* Role-Based Caregiver Portal Routes */}
                 <Route
                   path="/caregiver"
                   element={
                     <ProtectedRoute allowedRoles={['caregiver', 'admin']}>
-                      <CaregiverDashboard />
+                      <CaregiverLayout />
                     </ProtectedRoute>
                   }
-                />
+                >
+                  <Route index element={<CaregiverDashboard />} />
+                  <Route path="dashboard" element={<CaregiverDashboard />} />
+                  <Route path="patient" element={<PatientProfile />} />
+                  <Route path="trends" element={<Trends />} />
+                  <Route path="adherence" element={<Adherence />} />
+                  <Route path="alerts" element={<Alerts />} />
+                  <Route path="memory" element={<MemoryLibrary />} />
+                  <Route path="insights" element={<CaregiverInsights />} />
+                </Route>
 
                 {/* Error & Catch-all Fallbacks */}
                 <Route path="/unauthorized" element={<Unauthorized />} />

@@ -1,89 +1,31 @@
-const mongoose = require('mongoose');
+const { query } = require("../config/db");
 
-// ==========================================
-// USER SCHEMA
-// ==========================================
-
-const userSchema = new mongoose.Schema(
-  {
-    // User full name
-    name: {
-      type: String,
-      required: true,
-      trim: true
-    },
-
-    // User email
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true
-    },
-
-    // User password
-    password: {
-      type: String,
-      required: true,
-      minlength: 6,
-      select: false
-    },
-
-    // User role
-    role: {
-      type: String,
-      enum: [
-        'patient',
-        'caregiver',
-        'admin'
-      ],
-      default: 'patient'
-    },
-
-    // User age
-    age: {
-      type: Number,
-      min: 1,
-      max: 120
-    },
-
-    // User profile image
-    profileImage: {
-      type: String,
-      default: null
-    },
-
-    // User phone number
-    phone: {
-      type: String,
-      default: ''
-    },
-
-    // Account active status
-    isActive: {
-      type: Boolean,
-      default: true
-    },
-
-    // Last login time
-    lastLogin: {
-      type: Date,
-      default: null
-    }
+/**
+ * MySQL-backed User model
+ */
+const User = {
+  async findByEmail(email) {
+    const rows = await query("SELECT * FROM users WHERE email = ? LIMIT 1", [email.toLowerCase().trim()]);
+    return rows[0] || null;
   },
-  {
-    timestamps: true
+
+  async findById(id) {
+    const rows = await query("SELECT id, name, email, role, phone, avatar_url, is_active, last_login, created_at, updated_at FROM users WHERE id = ? LIMIT 1", [id]);
+    return rows[0] || null;
+  },
+
+  async create({ id, name, email, password, role = "patient", phone = null, avatarUrl = null }) {
+    await query(
+      `INSERT INTO users (id, name, email, password, role, phone, avatar_url, is_active)
+       VALUES (?, ?, ?, ?, ?, ?, ?, TRUE)`,
+      [id, name, email.toLowerCase().trim(), password, role, phone, avatarUrl]
+    );
+    return this.findById(id);
+  },
+
+  async updateLastLogin(id) {
+    await query("UPDATE users SET last_login = NOW() WHERE id = ?", [id]);
   }
-);
-
-// ==========================================
-// EXPORT MODEL
-// ==========================================
-
-const User = mongoose.model(
-  'User',
-  userSchema
-);
+};
 
 module.exports = User;

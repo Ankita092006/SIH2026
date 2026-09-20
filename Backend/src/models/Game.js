@@ -1,92 +1,20 @@
-const mongoose = require('mongoose');
+const { query } = require("../config/db");
 
-// ==========================================
-// GAME SCHEMA
-// ==========================================
-
-const gameSchema = new mongoose.Schema(
-  {
-    title: {
-      type: String,
-      required: true,
-      trim: true
-    },
-
-    description: {
-      type: String,
-      required: true
-    },
-
-    gameType: {
-      type: String,
-      enum: [
-        'memory',
-        'puzzle',
-        'matching',
-        'recall',
-        'quiz'
-      ],
-      required: true
-    },
-
-    difficulty: {
-      type: String,
-      enum: [
-        'easy',
-        'medium',
-        'hard'
-      ],
-      default: 'easy'
-    },
-
-    instructions: {
-      type: String,
-      required: true
-    },
-
-    questions: [
-      {
-        question: {
-          type: String,
-          required: true
-        },
-
-        options: {
-          type: [String],
-          default: []
-        },
-
-        correctAnswer: {
-          type: String,
-          required: true
-        },
-
-        points: {
-          type: Number,
-          default: 10
-        }
-      }
-    ],
-
-    timeLimit: {
-      type: Number,
-      default: 60
-    },
-
-    isActive: {
-      type: Boolean,
-      default: true
-    }
+/**
+ * MySQL-backed Game model
+ */
+const Game = {
+  async findAll({ activeOnly = true } = {}) {
+    const sql = activeOnly
+      ? "SELECT * FROM games WHERE is_active = TRUE ORDER BY title ASC"
+      : "SELECT * FROM games ORDER BY title ASC";
+    return query(sql);
   },
-  {
-    timestamps: true
+
+  async findById(id) {
+    const rows = await query("SELECT * FROM games WHERE id = ? LIMIT 1", [id]);
+    return rows[0] || null;
   }
-);
-
-// ==========================================
-// EXPORT MODEL
-// ==========================================
-
-const Game = mongoose.model('Game', gameSchema);
+};
 
 module.exports = Game;

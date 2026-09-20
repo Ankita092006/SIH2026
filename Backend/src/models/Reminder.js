@@ -1,100 +1,53 @@
-const mongoose = require('mongoose');
+const { query } = require("../config/db");
 
-// ==========================================
-// REMINDER SCHEMA
-// ==========================================
-
-const reminderSchema = new mongoose.Schema(
-  {
-    // Patient who owns the reminder
-    patient: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true
-    },
-
-    // Person who created the reminder
-    createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      required: true
-    },
-
-    // Reminder title
-    title: {
-      type: String,
-      required: true,
-      trim: true
-    },
-
-    // Reminder description
-    description: {
-      type: String,
-      default: '',
-      trim: true
-    },
-
-    // Reminder type
-    reminderType: {
-      type: String,
-      enum: [
-        'medication',
-        'appointment',
-        'activity',
-        'meal',
-        'other'
-      ],
-      default: 'other'
-    },
-
-    // Date and time for reminder
-    reminderDate: {
-      type: Date,
-      required: true
-    },
-
-    // Whether reminder is completed
-    isCompleted: {
-      type: Boolean,
-      default: false
-    },
-
-    // Whether reminder is active
-    isActive: {
-      type: Boolean,
-      default: true
-    },
-
-    // Whether reminder repeats
-    isRecurring: {
-      type: Boolean,
-      default: false
-    },
-
-    // Repeat frequency
-    repeatFrequency: {
-      type: String,
-      enum: [
-        'daily',
-        'weekly',
-        'monthly',
-        'none'
-      ],
-      default: 'none'
-    }
+/**
+ * MySQL-backed Reminder model
+ */
+const Reminder = {
+  async findByPatientId(patientId) {
+    return query(
+      "SELECT * FROM reminders WHERE patient_id = ? ORDER BY time ASC",
+      [patientId]
+    );
   },
-  {
-    timestamps: true
+
+  async findById(id) {
+    const rows = await query("SELECT * FROM reminders WHERE id = ? LIMIT 1", [id]);
+    return rows[0] || null;
+  },
+
+  async create({
+    id,
+    patientId,
+    createdBy = null,
+    title,
+    description = null,
+    reminderType = "other",
+    time,
+    reminderDate = null,
+    frequency = "daily",
+    isEnabled = true,
+    status = "pending"
+  }) {
+    await query(
+      `INSERT INTO reminders (
+        id, patient_id, created_by, title, description,
+        reminder_type, time, reminder_date, frequency, is_enabled, status
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [id, patientId, createdBy, title, description, reminderType, time, reminderDate, frequency, isEnabled, status]
+    );
+    return this.findById(id);
+  },
+
+  async updateStatus(id, status) {
+    await query("UPDATE reminders SET status = ? WHERE id = ?", [status, id]);
+    return this.findById(id);
+  },
+
+  async delete(id) {
+    await query("DELETE FROM reminders WHERE id = ?", [id]);
+    return true;
   }
-);
-
-// ==========================================
-// EXPORT MODEL
-// ==========================================
-
-const Reminder = mongoose.model(
-  'Reminder',
-  reminderSchema
-);
+};
 
 module.exports = Reminder;

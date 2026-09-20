@@ -1,81 +1,88 @@
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
+const { jwtSecret } = require("../config/env");
+const User = require("../models/User");
 
-const {
-  jwtSecret
-} = require('../config/env');
-
-const User = require('../models/User');
-
-
-// ==========================================
-// AUTHENTICATION MIDDLEWARE
-// ==========================================
-
+/**
+ * Middleware to protect routes and verify JWT bearer tokens
+ */
 async function protect(req, res, next) {
   try {
-
-    // 1. Get authorization header
     const authHeader = req.headers.authorization;
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({
         success: false,
-        message: 'Not authorized. Token missing.'
+        message: "Not authorized. Token missing."
       });
     }
 
-
-    // 2. Extract token
-    const token = authHeader.split(' ')[1];
-
+    const token = authHeader.split(" ")[1];
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: 'Not authorized. Token missing.'
+        message: "Not authorized. Token missing."
       });
     }
 
-
-    // 3. Verify token
+    // Verify token validity
     const decoded = jwt.verify(token, jwtSecret);
 
-
-    // 4. Find user in database
-    const user = await User.findById(decoded.id)
-      .select('-password');
-
+    // Look up user in MySQL
+    const user = await User.findById(decoded.id);
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'User not found.'
+        message: "User not found or session expired."
       });
     }
 
+    if (!user.is_active) {
+      return res.status(403).json({
+        success: false,
+        message: "Account has been deactivated."
+      });
+    }
 
-    // 5. Attach user to request
-    req.user = user;
+    // Attach user identity to request object
+    req.user = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role
+    };
 
-
-    // 6. Continue to next middleware/controller
     next();
-
   } catch (error) {
-
-    console.error('Authentication error:', error.message);
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({
+        success: false,
+        message: "Token has expired. Please log in again."
+      });
+    }
 
     return res.status(401).json({
       success: false,
-      message: 'Invalid or expired token.'
+      message: "Invalid or malformed token."
     });
-
   }
 }
 
-
-// ==========================================
-// EXPORT MIDDLEWARE
-// ==========================================
+/**
+ * Middleware to restrict route access by role
+ */
+function authorize(...allowedRoles) {
+  return (req, res, next) => {
+    if (!req.user || !allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({
+        success: false,
+        message: `Forbidden: Access requires one of the following roles: [${allowedRoles.join(", ")}]`
+      });
+    }
+    next();
+  };
+}
 
 module.exports = {
-  protect
+  protect,
+  authorize
 };

@@ -8,7 +8,7 @@
     "dev": "nodemon src/server.js",
     "migrate": "node src/db/migrate.js",
     "seed": "node src/db/seed.js",
-    "test": "node src/db/test_db_foundation.js"
+    "test": "node src/tests/run_all_tests.js"
   },
   "keywords": [],
   "author": "",

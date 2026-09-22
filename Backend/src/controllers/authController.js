@@ -105,14 +105,20 @@ async function login(req, res) {
       });
     }
 
-    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedInput = email.trim().toLowerCase();
+    const fallbackEmail = normalizedInput.includes('@') ? normalizedInput : `${normalizedInput}@eldercare.in`;
+    console.log(`🔑 [AUTH] Login attempt for: ${normalizedInput} (fallback: ${fallbackEmail})`);
 
     const [rows] = await pool.query(
-      'SELECT id, name, email, password, role, avatar_url FROM users WHERE LOWER(email) = ? AND is_active = 1',
-      [normalizedEmail]
+      `SELECT u.id, u.name, u.email, u.password, u.role, u.avatar_url 
+       FROM users u
+       LEFT JOIN patients p ON p.user_id = u.id
+       WHERE (LOWER(u.email) = ? OR LOWER(u.email) = ? OR LOWER(p.id) = ?) AND u.is_active = 1`,
+      [normalizedInput, fallbackEmail, normalizedInput]
     );
 
     if (rows.length === 0) {
+      console.warn(`⚠️ [AUTH] User not found: ${normalizedInput}`);
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
@@ -123,6 +129,7 @@ async function login(req, res) {
     const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
     if (!isPasswordCorrect) {
+      console.warn(`⚠️ [AUTH] Invalid password attempt for: ${normalizedInput}`);
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
@@ -150,6 +157,7 @@ async function login(req, res) {
     };
 
     const token = generateToken(userObj);
+    console.log(`✅ [AUTH] Login SUCCESS: ${user.email} (${user.role})`);
 
     return res.status(200).json({
       success: true,

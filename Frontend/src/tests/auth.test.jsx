@@ -3,7 +3,7 @@ import { authApi } from '../api/auth.api';
 
 describe('Authentication API & Token Management', () => {
   it('successfully logs in with valid patient credentials', async () => {
-    const res = await authApi.login('bhaben@eldercare.in', 'secure123');
+    const res = await authApi.login('bhaben@eldercare.in', 'password123');
     expect(res.success).toBe(true);
     expect(res.token).toBeDefined();
     expect(res.user.email).toBe('bhaben@eldercare.in');

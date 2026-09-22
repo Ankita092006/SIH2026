@@ -28,6 +28,17 @@ app.use(cors());
 // Read JSON data from requests
 app.use(express.json());
 
+// Request logger for terminal visibility
+app.use((req, res, next) => {
+  const start = Date.now();
+  const timestamp = new Date().toLocaleTimeString();
+  res.on("finish", () => {
+    const duration = Date.now() - start;
+    console.log(`📡 [${timestamp}] ${req.method} ${req.originalUrl} -> ${res.statusCode} (${duration}ms)`);
+  });
+  next();
+});
+
 // ===============================
 // SWAGGER DOCUMENTATION
 // ===============================

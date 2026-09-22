@@ -1,9 +1,13 @@
 const express = require("express");
 const cors = require("cors");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
 const swaggerUi = require("swagger-ui-express");
 
 // Import Swagger configuration
 const swaggerSpec = require("./config/swagger");
+const { clientUrl, nodeEnv } = require("./config/env");
+const { errorMiddleware, notFound } = require("./middleware/error.middleware");
 
 // Import routes
 const authRoutes = require("./routes/authRoutes");
@@ -19,22 +23,95 @@ const caregiverRoutes = require("./routes/caregiverRoutes");
 const app = express();
 
 // ===============================
-// MIDDLEWARE
+// SECURITY HEADERS (HELMET)
 // ===============================
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "blob:", "https:"],
+        connectSrc: ["'self'", clientUrl, "http://localhost:5173", "http://127.0.0.1:5173"],
+        upgradeInsecureRequests: nodeEnv === 'production' ? [] : null
+      }
+    },
+    crossOriginEmbedderPolicy: false
+  })
+);
 
-// Enable CORS
-app.use(cors());
+// ===============================
+// CORS HARDENING
+// ===============================
+const allowedOrigins = [
+  clientUrl,
+  'http://localhost:5173',
+  'http://127.0.0.1:5173',
+  'http://localhost:3000'
+].filter(Boolean);
 
-// Read JSON data from requests
-app.use(express.json());
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (e.g. mobile apps, curl, server-to-server) or allowed origins
+      if (!origin || allowedOrigins.includes(origin) || nodeEnv === 'test') {
+        callback(null, true);
+      } else {
+        callback(new Error(`CORS blocked request from origin: ${origin}`));
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
+  })
+);
 
-// Request logger for terminal visibility
+// ===============================
+// REQUEST BODY LIMITS
+// ===============================
+app.use(express.json({ limit: "1mb" }));
+app.use(express.urlencoded({ extended: true, limit: "1mb" }));
+
+// ===============================
+// RATE LIMITING
+// ===============================
+// Sensitive Auth Rate Limiter
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: nodeEnv === 'test' ? 1000 : 30, // 30 requests per 15 min
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Too many authentication attempts. Please try again after 15 minutes."
+  }
+});
+
+// Voice API Rate Limiter
+const voiceLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: nodeEnv === 'test' ? 1000 : 60,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: {
+    success: false,
+    message: "Voice processing rate limit reached. Please wait a moment."
+  }
+});
+
+// ===============================
+// REQUEST LOGGING (Sanitized)
+// ===============================
 app.use((req, res, next) => {
   const start = Date.now();
   const timestamp = new Date().toLocaleTimeString();
   res.on("finish", () => {
     const duration = Date.now() - start;
-    console.log(`📡 [${timestamp}] ${req.method} ${req.originalUrl} -> ${res.statusCode} (${duration}ms)`);
+    if (nodeEnv !== 'test') {
+      console.log(`📡 [${timestamp}] ${req.method} ${req.originalUrl} -> ${res.statusCode} (${duration}ms)`);
+    }
   });
   next();
 });
@@ -42,7 +119,6 @@ app.use((req, res, next) => {
 // ===============================
 // SWAGGER DOCUMENTATION
 // ===============================
-
 app.use(
   "/api-docs",
   swaggerUi.serve,
@@ -50,45 +126,27 @@ app.use(
 );
 
 // ===============================
-// ROUTES
+// MOUNT ROUTES
 // ===============================
-
-app.use("/api/auth", authRoutes);
+app.use("/api/auth", authLimiter, authRoutes);
 app.use("/api/patient", patientRoutes);
 app.use("/api/games", gameRoutes);
 app.use("/api/results", resultsRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/reminders", reminderRoutes);
 app.use("/api/memories", memoryRoutes);
-app.use("/api/voice", voiceRoutes);
+app.use("/api/voice", voiceLimiter, voiceRoutes);
 app.use("/api/caregiver", caregiverRoutes);
 
-// ===============================
-// HOME ROUTE
-// ===============================
-
+// Home route
 app.get("/", (req, res) => {
   res.status(200).json({
     status: "success",
-    message: "Dementia Cognitive Gaming API is running",
+    message: "Dementia Cognitive Gaming API Gateway is active",
   });
 });
 
-// ===============================
-// HEALTH CHECK ROUTE
-// ===============================
-
-/**
- * @swagger
- * /api/health:
- *   get:
- *     summary: Check API health
- *     tags: [Health]
- *     responses:
- *       200:
- *         description: Backend is running successfully
- */
-
+// Health check route
 app.get("/api/health", (req, res) => {
   res.status(200).json({
     success: true,
@@ -99,7 +157,9 @@ app.get("/api/health", (req, res) => {
 });
 
 // ===============================
-// EXPORT APP
+// ERROR HANDLING MIDDLEWARE
 // ===============================
+app.use(notFound);
+app.use(errorMiddleware);
 
 module.exports = app;

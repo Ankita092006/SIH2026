@@ -1,5 +1,6 @@
 const crypto = require('crypto');
 const { pool } = require('../config/db');
+const { nodeEnv } = require('../config/env');
 
 // GET GAMES CATALOG
 async function getGames(req, res) {
@@ -15,7 +16,7 @@ async function getGames(req, res) {
       games: rows
     });
   } catch (error) {
-    console.error('getGames error:', error);
+    if (nodeEnv !== 'test') console.error('getGames error:', error.message);
     return res.status(500).json({
       success: false,
       message: 'Failed to fetch games catalog'
@@ -23,42 +24,54 @@ async function getGames(req, res) {
   }
 }
 
-// START GAMEPLAY SESSION
+// START GAMEPLAY SESSION (STRICT PATIENT IDENTITY ASSIGNMENT)
 async function startSession(req, res) {
   try {
     const { gameId } = req.params;
-    const userId = req.user?.id;
-
-    // Resolve patientId
-    let patientId = 'PAT001';
-    if (userId) {
-      const [patRows] = await pool.query('SELECT id FROM patients WHERE user_id = ?', [userId]);
-      if (patRows.length > 0) {
-        patientId = patRows[0].id;
-      }
-    }
+    const user = req.user;
 
     // Check game existence
-    const [gameRows] = await pool.query('SELECT id, difficulty FROM games WHERE id = ?', [gameId]);
-    const startingDifficulty = gameRows.length > 0 ? (gameRows[0].difficulty || 2) : 2;
+    const [gameRows] = await pool.query(
+      'SELECT id, difficulty FROM games WHERE id = ? AND is_active = 1',
+      [gameId]
+    );
 
-    const sessionId = `ses_${Date.now()}_${gameId.replace(/[^a-zA-Z0-9_-]/g, '')}`;
+    if (gameRows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Game not found or inactive'
+      });
+    }
+
+    const startingDifficulty = gameRows[0].difficulty || 2;
+
+    // Authoritative patient identification: Never allow client to impersonate
+    let patientId = null;
+    if (user && user.patientId) {
+      patientId = user.patientId;
+    } else {
+      // Unauthenticated guest session: isolated guest ID
+      patientId = 'GUEST';
+    }
+
+    const sanitizedGameId = gameId.replace(/[^a-zA-Z0-9_-]/g, '');
+    const sessionId = `ses_${Date.now()}_${sanitizedGameId}_${crypto.randomUUID().slice(0, 4)}`;
 
     await pool.query(
       `INSERT INTO game_sessions (session_id, patient_id, game_id, starting_difficulty, current_difficulty, status, started_at)
        VALUES (?, ?, ?, ?, ?, 'in_progress', NOW())`,
-      [sessionId, patientId, gameId, startingDifficulty, startingDifficulty]
+      [sessionId, patientId, sanitizedGameId, startingDifficulty, startingDifficulty]
     );
 
     return res.status(201).json({
       success: true,
       sessionId,
-      gameId,
+      gameId: sanitizedGameId,
       startingDifficulty,
       timestamp: new Date().toISOString()
     });
   } catch (error) {
-    console.error('startSession error:', error);
+    if (nodeEnv !== 'test') console.error('startSession error:', error.message);
     return res.status(500).json({
       success: false,
       message: 'Failed to start game session'

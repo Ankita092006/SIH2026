@@ -1,4 +1,4 @@
-const { voiceApiUrl, hfToken } = require('../config/env');
+const { voiceApiUrl, hfToken, nodeEnv } = require('../config/env');
 
 const SAFE_VOICE_ACTIONS = {
   START_MEMORY_GAME: 'start_memory_game',
@@ -58,28 +58,31 @@ async function processVoice(req, res) {
       });
     }
 
-    const inputPhrase = (simulatedPhrase || text || '').trim();
+    // Input sanitization and length bounding (prevent DoS)
+    const rawInput = typeof simulatedPhrase === 'string' ? simulatedPhrase : (typeof text === 'string' ? text : '');
+    const inputPhrase = rawInput.trim().slice(0, 500);
 
     // If audio is provided, call Hugging Face Space Gradio API
-    if (audio && typeof audio === 'object' && audio.path) {
+    if (audio && typeof audio === 'object' && typeof audio.path === 'string') {
+      const sanitizedAudioPath = audio.path.replace(/\.\./g, '').trim().slice(0, 500);
       try {
         const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 12000);
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
 
-        const hfCallRes = await fetch(`${voiceApiUrl.replace(/\/$/, '')}/gradio_api/call/process_voice`, {
+        const hfCallRes = await fetch(`${voiceApiUrl}/gradio_api/call/process_voice`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             ...(hfToken ? { 'Authorization': `Bearer ${hfToken}` } : {})
           },
-          body: JSON.stringify({ data: [audio] }),
+          body: JSON.stringify({ data: [{ ...audio, path: sanitizedAudioPath }] }),
           signal: controller.signal
         });
 
         if (hfCallRes.ok) {
           const callData = await hfCallRes.json();
           if (callData.event_id) {
-            const eventRes = await fetch(`${voiceApiUrl.replace(/\/$/, '')}/gradio_api/call/process_voice/${callData.event_id}`, {
+            const eventRes = await fetch(`${voiceApiUrl}/gradio_api/call/process_voice/${callData.event_id}`, {
               signal: controller.signal
             });
             const eventText = await eventRes.text();
@@ -88,13 +91,13 @@ async function processVoice(req, res) {
             // Parse SSE data: ["<transcription>", "<intent>", <similarity>, "<action>"]
             const match = eventText.match(/data:\s*(\[.+\])/);
             if (match) {
-              const [transcription, intent, similarity, rawAction] = JSON.parse(match[1]);
+              const [transcription, intent, similarity] = JSON.parse(match[1]);
               const numSimilarity = Number(similarity || 0);
 
               if (numSimilarity >= 0.47 && SAFE_VOICE_ACTIONS[intent]) {
                 return res.status(200).json({
                   success: true,
-                  transcription,
+                  transcription: String(transcription).slice(0, 500),
                   intent,
                   similarity: numSimilarity,
                   action: SAFE_VOICE_ACTIONS[intent],
@@ -105,7 +108,7 @@ async function processVoice(req, res) {
 
               return res.status(200).json({
                 success: true,
-                transcription: transcription || '...',
+                transcription: String(transcription || '...').slice(0, 500),
                 intent: 'UNKNOWN',
                 similarity: numSimilarity,
                 action: null,
@@ -117,7 +120,7 @@ async function processVoice(req, res) {
         }
         clearTimeout(timeoutId);
       } catch (hfErr) {
-        console.warn('[Voice Controller] HF audio call error:', hfErr.message);
+        if (nodeEnv !== 'test') console.warn('[Voice Controller] HF audio call notice:', hfErr.message);
       }
     }
 
@@ -163,7 +166,7 @@ async function processVoice(req, res) {
       response: "Please speak a voice command."
     });
   } catch (error) {
-    console.error('processVoice error:', error);
+    if (nodeEnv !== 'test') console.error('processVoice error:', error.message);
     return res.status(500).json({
       success: false,
       message: 'Failed to process voice request'

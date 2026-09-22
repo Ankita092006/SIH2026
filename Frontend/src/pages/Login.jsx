@@ -108,9 +108,7 @@ export default function Login() {
 
     setLoading(true);
     try {
-      // Handles both email or patientId (formats into email for API client)
-      const email = emailOrId.includes('@') ? emailOrId : `${emailOrId.toLowerCase()}@eldercare.in`;
-      const res = await login(email, password);
+      const res = await login(emailOrId.trim(), password);
       if (res.user?.role === 'caregiver') {
         navigate('/caregiver');
       } else {

@@ -7,8 +7,8 @@
 import { handleMockRequest } from './mockAdapter';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-// Default to mock mode in development, isolated environment, and Vitest test runner
-const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_API === 'true' || import.meta.env.MODE === 'test' || true;
+// Respect VITE_USE_MOCK_API flag; default to test mode or fallback when true
+const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_API === 'true' || (import.meta.env.MODE === 'test' && import.meta.env.VITE_USE_MOCK_API !== 'false');
 
 /**
  * Custom API Error class with normalized HTTP status codes
@@ -42,6 +42,7 @@ export async function apiClient(endpoint, options = {}) {
 
   // 1. If mock mode is explicitly active or forced
   if (USE_MOCK_API || forceMock) {
+    console.log(`[API Client] 🎭 MOCK MODE ACTIVE: ${method} ${normalizedEndpoint}`);
     const mockRes = await handleMockRequest(normalizedEndpoint, { method, headers, body });
     if (mockRes.status >= 200 && mockRes.status < 300) {
       return mockRes.data;
@@ -55,6 +56,7 @@ export async function apiClient(endpoint, options = {}) {
 
   // 2. Real Backend Gateway Request
   const fullUrl = `${API_BASE_URL.replace(/\/api$/, '')}${normalizedEndpoint}`;
+  console.log(`[API Client] 🌐 LIVE BACKEND REQUEST: ${method} ${fullUrl}`);
   const resolvedToken = token || (typeof window !== 'undefined' ? localStorage.getItem('authToken') : null);
 
   const requestHeaders = {

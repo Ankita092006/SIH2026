@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { resultsApi } from '../api/results.api';
 import { getGameResults } from '../services/gameService';
 import { cognitiveGames } from '../data/mockData';
 import { useLanguage } from '../context/LanguageContext';
@@ -9,7 +10,19 @@ export default function ResultsHistory() {
   const { t, language } = useLanguage();
 
   useEffect(() => {
-    setResults(getGameResults());
+    let active = true;
+    resultsApi.getResults()
+      .then(data => {
+        if (active && data.results && data.results.length > 0) {
+          setResults(data.results);
+        } else if (active) {
+          setResults(getGameResults());
+        }
+      })
+      .catch(() => {
+        if (active) setResults(getGameResults());
+      });
+    return () => { active = false; };
   }, []);
 
   return (

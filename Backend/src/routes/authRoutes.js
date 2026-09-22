@@ -1,13 +1,8 @@
 const express = require("express");
+const authController = require("../controllers/authController");
+const { protect } = require("../middleware/authMiddleware");
 
 const router = express.Router();
-
-// Temporary user storage
-// Note: Data will be lost when the server restarts.
-const users = [];
-
-// Temporary active login tokens
-const activeTokens = new Set();
 
 /**
  * @swagger
@@ -35,13 +30,17 @@ const activeTokens = new Set();
  *             properties:
  *               name:
  *                 type: string
- *                 example: Ankita
+ *                 example: Bhaben Barua
  *               email:
  *                 type: string
- *                 example: ankita@gmail.com
+ *                 example: bhaben@eldercare.in
  *               password:
  *                 type: string
  *                 example: password123
+ *               role:
+ *                 type: string
+ *                 enum: [patient, caregiver, admin]
+ *                 default: patient
  *     responses:
  *       201:
  *         description: User registered successfully
@@ -50,49 +49,7 @@ const activeTokens = new Set();
  *       409:
  *         description: Email already exists
  */
-
-// REGISTER
-router.post("/register", (req, res) => {
-  const { name, email, password } = req.body;
-
-  // Check required fields
-  if (!name || !email || !password) {
-    return res.status(400).json({
-      status: "error",
-      message: "Name, email and password are required",
-    });
-  }
-
-  // Check whether email already exists
-  const existingUser = users.find((user) => user.email === email);
-
-  if (existingUser) {
-    return res.status(409).json({
-      status: "error",
-      message: "Email already registered",
-    });
-  }
-
-  // Create new user
-  const newUser = {
-    id: users.length + 1,
-    name,
-    email,
-    password,
-  };
-
-  users.push(newUser);
-
-  return res.status(201).json({
-    status: "success",
-    message: "User registered successfully",
-    user: {
-      id: newUser.id,
-      name: newUser.name,
-      email: newUser.email,
-    },
-  });
-});
+router.post("/register", authController.register);
 
 /**
  * @swagger
@@ -112,7 +69,7 @@ router.post("/register", (req, res) => {
  *             properties:
  *               email:
  *                 type: string
- *                 example: ankita@gmail.com
+ *                 example: bhaben@eldercare.in
  *               password:
  *                 type: string
  *                 example: password123
@@ -122,88 +79,23 @@ router.post("/register", (req, res) => {
  *       401:
  *         description: Invalid email or password
  */
-
-// LOGIN
-router.post("/login", (req, res) => {
-  const { email, password } = req.body;
-
-  // Check required fields
-  if (!email || !password) {
-    return res.status(400).json({
-      status: "error",
-      message: "Email and password are required",
-    });
-  }
-
-  // Find user
-  const user = users.find(
-    (user) => user.email === email && user.password === password
-  );
-
-  if (!user) {
-    return res.status(401).json({
-      status: "error",
-      message: "Invalid email or password",
-    });
-  }
-
-  // Create temporary token
-  const token = `token-${user.id}-${Date.now()}`;
-
-  activeTokens.add(token);
-
-  return res.status(200).json({
-    status: "success",
-    message: "Login successful",
-    token,
-    user: {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-    },
-  });
-});
+router.post("/login", authController.login);
 
 /**
  * @swagger
  * /api/auth/me:
  *   get:
- *     summary: Check logged-in user
+ *     summary: Check logged-in user session
  *     tags: [Authentication]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: User is authenticated
+ *         description: User profile and session restored
  *       401:
- *         description: Unauthorized
+ *         description: Unauthorized or token expired
  */
-
-// GET CURRENT USER
-router.get("/me", (req, res) => {
-  const authorization = req.headers.authorization;
-
-  if (!authorization) {
-    return res.status(401).json({
-      status: "error",
-      message: "Authorization token is required",
-    });
-  }
-
-  const token = authorization.replace("Bearer ", "");
-
-  if (!activeTokens.has(token)) {
-    return res.status(401).json({
-      status: "error",
-      message: "Invalid or expired token",
-    });
-  }
-
-  return res.status(200).json({
-    status: "success",
-    message: "User is authenticated",
-  });
-});
+router.get("/me", protect, authController.getMe);
 
 /**
  * @swagger
@@ -211,35 +103,54 @@ router.get("/me", (req, res) => {
  *   post:
  *     summary: Logout user
  *     tags: [Authentication]
- *     security:
- *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Logout successful
- *       401:
- *         description: Unauthorized
  */
+router.post("/logout", authController.logout);
 
-// LOGOUT
-router.post("/logout", (req, res) => {
-  const authorization = req.headers.authorization;
+/**
+ * @swagger
+ * /api/auth/forgot-password:
+ *   post:
+ *     summary: Request password reset instructions
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Reset instructions sent
+ */
+router.post("/forgot-password", authController.forgotPassword);
 
-  if (!authorization) {
-    return res.status(401).json({
-      status: "error",
-      message: "Authorization token is required",
-    });
-  }
+/**
+ * @swagger
+ * /api/auth/reset-password:
+ *   post:
+ *     summary: Reset password with token
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - token
+ *               - newPassword
+ *     responses:
+ *       200:
+ *         description: Password reset successful
+ */
+router.post("/reset-password", authController.resetPassword);
 
-  const token = authorization.replace("Bearer ", "");
-
-  activeTokens.delete(token);
-
-  return res.status(200).json({
-    status: "success",
-    message: "Logout successful",
-  });
-});
-
-// Export router
 module.exports = router;

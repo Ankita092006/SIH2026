@@ -116,7 +116,6 @@ export default function Register() {
           >
             <option value="patient">Elderly Participant (Patient)</option>
             <option value="caregiver">Family Caregiver / Guardian</option>
-            <option value="admin">Platform Administrator</option>
           </select>
         </div>
 

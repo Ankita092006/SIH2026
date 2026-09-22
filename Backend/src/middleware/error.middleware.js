@@ -1,39 +1,39 @@
+const { nodeEnv } = require('../config/env');
+
 // ==========================================
-// ERROR MIDDLEWARE
+// CENTRAL ERROR HANDLING MIDDLEWARE
 // ==========================================
 
 function errorMiddleware(err, req, res, next) {
+  const statusCode = typeof err.statusCode === 'number' ? err.statusCode : (typeof err.status === 'number' ? err.status : 500);
 
-  // Display error in terminal
-  console.error('Error:', err.message);
+  // Secure server-side error logging
+  if (nodeEnv !== 'test') {
+    console.error(`[ERROR] [${new Date().toISOString()}] ${req.method} ${req.originalUrl}:`, err.message);
+  }
 
-  // Set default status code
-  const statusCode = err.statusCode || 500;
+  // Prevent internal error details, SQL queries, or stack traces from reaching clients
+  let clientMessage = err.message || 'Internal Server Error';
+  if (nodeEnv === 'production' && statusCode >= 500) {
+    clientMessage = 'An unexpected server error occurred. Please try again later.';
+  }
 
-  // Send error response
   res.status(statusCode).json({
     success: false,
-    message: err.message || 'Internal Server Error'
+    message: clientMessage
   });
 }
 
-
 // ==========================================
-// NOT FOUND MIDDLEWARE
+// 404 NOT FOUND MIDDLEWARE
 // ==========================================
 
 function notFound(req, res, next) {
-
   res.status(404).json({
     success: false,
-    message: `Route not found: ${req.originalUrl}`
+    message: `Resource not found: ${req.method} ${req.originalUrl}`
   });
 }
-
-
-// ==========================================
-// EXPORT FUNCTIONS
-// ==========================================
 
 module.exports = {
   errorMiddleware,

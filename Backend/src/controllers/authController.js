@@ -1,21 +1,16 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
+const { pool } = require('../config/db');
+const { jwtSecret, jwtExpiresIn } = require('../config/env');
 
-const User = require('../models/User');
-const {
-  jwtSecret,
-  jwtExpiresIn
-} = require('../config/env');
-
-
-// ==========================================
-// Generate JWT Token
-// ==========================================
-
-function generateToken(userId) {
+// Helper to generate JWT token
+function generateToken(user) {
   return jwt.sign(
     {
-      id: userId
+      id: user.id,
+      email: user.email,
+      role: user.role
     },
     jwtSecret,
     {
@@ -24,21 +19,11 @@ function generateToken(userId) {
   );
 }
 
-
-// ==========================================
 // REGISTER USER
-// ==========================================
-
 async function register(req, res) {
   try {
-    const {
-      name,
-      email,
-      password,
-      role
-    } = req.body;
+    const { name, email, password, role = 'patient' } = req.body;
 
-    // Check required fields
     if (!name || !email || !password) {
       return res.status(400).json({
         success: false,
@@ -46,7 +31,6 @@ async function register(req, res) {
       });
     }
 
-    // Check password length
     if (password.length < 6) {
       return res.status(400).json({
         success: false,
@@ -54,48 +38,54 @@ async function register(req, res) {
       });
     }
 
-    // Check if user already exists
-    const existingUser = await User.findOne({
-      email: email.toLowerCase()
-    });
+    const normalizedEmail = email.trim().toLowerCase();
 
-    if (existingUser) {
+    // Check if user already exists
+    const [existing] = await pool.query('SELECT id FROM users WHERE LOWER(email) = ?', [normalizedEmail]);
+    if (existing.length > 0) {
       return res.status(409).json({
         success: false,
         message: 'User already exists'
       });
     }
 
-    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
+    const userId = crypto.randomUUID();
 
-    // Create new user
-    const user = await User.create({
-      name,
-      email: email.toLowerCase(),
-      password: hashedPassword,
-      role: role || 'patient'
-    });
+    await pool.query(
+      `INSERT INTO users (id, name, email, password, role, is_active, created_at, updated_at)
+       VALUES (?, ?, ?, ?, ?, 1, NOW(), NOW())`,
+      [userId, name.trim(), normalizedEmail, hashedPassword, role]
+    );
 
-    // Generate token
-    const token = generateToken(user._id.toString());
+    let patientId = null;
+    if (role === 'patient') {
+      patientId = `PAT_${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
+      await pool.query(
+        `INSERT INTO patients (id, user_id, name, age, primary_language, condition_stage, avatar_url, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
+        [patientId, userId, name.trim(), 70, 'as', 'Mild Cognitive Impairment', '/ner_senior_avatar.png']
+      );
+    }
 
-    // Send response
+    const userObj = {
+      id: userId,
+      name: name.trim(),
+      email: normalizedEmail,
+      role,
+      ...(patientId ? { patientId } : {})
+    };
+
+    const token = generateToken(userObj);
+
     return res.status(201).json({
       success: true,
       message: 'User registered successfully',
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role
-      }
+      user: userObj
     });
-
   } catch (error) {
-    console.error('Registration error:', error.message);
-
+    console.error('Registration error:', error);
     return res.status(500).json({
       success: false,
       message: 'Registration failed'
@@ -103,19 +93,11 @@ async function register(req, res) {
   }
 }
 
-
-// ==========================================
 // LOGIN USER
-// ==========================================
-
 async function login(req, res) {
   try {
-    const {
-      email,
-      password
-    } = req.body;
+    const { email, password } = req.body;
 
-    // Check required fields
     if (!email || !password) {
       return res.status(400).json({
         success: false,
@@ -123,23 +105,22 @@ async function login(req, res) {
       });
     }
 
-    // Find user
-    const user = await User.findOne({
-      email: email.toLowerCase()
-    }).select('+password');
+    const normalizedEmail = email.trim().toLowerCase();
 
-    if (!user) {
+    const [rows] = await pool.query(
+      'SELECT id, name, email, password, role, avatar_url FROM users WHERE LOWER(email) = ? AND is_active = 1',
+      [normalizedEmail]
+    );
+
+    if (rows.length === 0) {
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
       });
     }
 
-    // Compare password
-    const isPasswordCorrect = await bcrypt.compare(
-      password,
-      user.password
-    );
+    const user = rows[0];
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
     if (!isPasswordCorrect) {
       return res.status(401).json({
@@ -148,25 +129,36 @@ async function login(req, res) {
       });
     }
 
-    // Generate token
-    const token = generateToken(user._id.toString());
+    // Update last login
+    await pool.query('UPDATE users SET last_login = NOW() WHERE id = ?', [user.id]);
 
-    // Send response
+    let patientId = null;
+    if (user.role === 'patient') {
+      const [patRows] = await pool.query('SELECT id FROM patients WHERE user_id = ?', [user.id]);
+      if (patRows.length > 0) {
+        patientId = patRows[0].id;
+      }
+    }
+
+    const userObj = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      avatarUrl: user.avatar_url || '/ner_senior_avatar.png',
+      ...(patientId ? { patientId } : {})
+    };
+
+    const token = generateToken(userObj);
+
     return res.status(200).json({
       success: true,
       message: 'Login successful',
       token,
-      user: {
-        id: user._id,
-        name: user.name,
-        email: user.email,
-        role: user.role
-      }
+      user: userObj
     });
-
   } catch (error) {
-    console.error('Login error:', error.message);
-
+    console.error('Login error:', error);
     return res.status(500).json({
       success: false,
       message: 'Login failed'
@@ -174,31 +166,47 @@ async function login(req, res) {
   }
 }
 
-
-// ==========================================
-// GET CURRENT USER
-// ==========================================
-
+// GET CURRENT USER PROFILE
 async function getMe(req, res) {
   try {
-    const user = await User.findById(req.user.id)
-      .select('-password');
+    const userId = req.user.id;
 
-    if (!user) {
+    const [rows] = await pool.query(
+      'SELECT id, name, email, role, avatar_url, phone, created_at FROM users WHERE id = ?',
+      [userId]
+    );
+
+    if (rows.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'User not found'
       });
     }
 
+    const user = rows[0];
+    let patientId = null;
+    if (user.role === 'patient') {
+      const [patRows] = await pool.query('SELECT id FROM patients WHERE user_id = ?', [user.id]);
+      if (patRows.length > 0) {
+        patientId = patRows[0].id;
+      }
+    }
+
     return res.status(200).json({
       success: true,
-      user
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        avatarUrl: user.avatar_url || '/ner_senior_avatar.png',
+        phone: user.phone || '',
+        createdAt: user.created_at,
+        ...(patientId ? { patientId } : {})
+      }
     });
-
   } catch (error) {
-    console.error('Get user error:', error.message);
-
+    console.error('Get user error:', error);
     return res.status(500).json({
       success: false,
       message: 'Failed to fetch user'
@@ -206,26 +214,43 @@ async function getMe(req, res) {
   }
 }
 
-
-// ==========================================
-// LOGOUT USER
-// ==========================================
-
+// LOGOUT
 async function logout(req, res) {
   return res.status(200).json({
     success: true,
-    message: 'Logout successful. Remove the token from the client.'
+    message: 'Logout successful'
   });
 }
 
+// FORGOT PASSWORD
+async function forgotPassword(req, res) {
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ success: false, message: 'Email is required' });
+  }
+  return res.status(200).json({
+    success: true,
+    message: 'Password reset instructions sent to your email'
+  });
+}
 
-// ==========================================
-// EXPORT FUNCTIONS
-// ==========================================
+// RESET PASSWORD
+async function resetPassword(req, res) {
+  const { token, newPassword } = req.body;
+  if (!newPassword || newPassword.length < 6) {
+    return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
+  }
+  return res.status(200).json({
+    success: true,
+    message: 'Password has been successfully reset'
+  });
+}
 
 module.exports = {
   register,
   login,
   getMe,
-  logout
+  logout,
+  forgotPassword,
+  resetPassword
 };

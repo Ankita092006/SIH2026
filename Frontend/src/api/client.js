@@ -7,8 +7,8 @@
 import { handleMockRequest } from './mockAdapter';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
-// Default to mock mode in development, isolated environment, and Vitest test runner
-const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_API === 'true' || import.meta.env.MODE === 'test' || true;
+// Respect VITE_USE_MOCK_API flag; default to test mode or fallback when true
+const USE_MOCK_API = import.meta.env.VITE_USE_MOCK_API === 'true' || (import.meta.env.MODE === 'test' && import.meta.env.VITE_USE_MOCK_API !== 'false');
 
 /**
  * Custom API Error class with normalized HTTP status codes

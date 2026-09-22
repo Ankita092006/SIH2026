@@ -1,7 +1,29 @@
-import React from 'react';
-import { patientProfile } from '../../data/mockData';
+import React, { useState, useEffect } from 'react';
+import { caregiverApi } from '../../api/caregiver.api';
+import { patientProfile as fallbackProfile } from '../../data/mockData';
 
 const PatientProfile = () => {
+  const [patient, setPatient] = useState(fallbackProfile);
+
+  useEffect(() => {
+    let active = true;
+    caregiverApi.getPatients()
+      .then(res => {
+        if (active && res.patients && res.patients.length > 0) {
+          const p = res.patients[0];
+          setPatient(prev => ({
+            ...prev,
+            id: p.id,
+            name: p.name,
+            age: p.age,
+            avatar: p.avatarUrl || prev.avatar
+          }));
+        }
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, []);
+
   return (
     <div style={styles.container}>
       <div style={styles.header}>
@@ -12,38 +34,38 @@ const PatientProfile = () => {
       <div style={styles.card}>
         <div style={styles.profileSection}>
           <img
-            src={patientProfile.avatar}
-            alt={patientProfile.name}
+            src={patient.avatar}
+            alt={patient.name}
             style={styles.avatar}
           />
 
           <div>
-            <h2>{patientProfile.name}</h2>
-            <p>Patient ID: {patientProfile.id}</p>
-            <p>Age: {patientProfile.age} years</p>
+            <h2>{patient.name}</h2>
+            <p>Patient ID: {patient.id}</p>
+            <p>Age: {patient.age} years</p>
           </div>
         </div>
 
         <div style={styles.infoGrid}>
           <div style={styles.infoBox}>
             <span>Patient ID</span>
-            <strong>{patientProfile.id}</strong>
+            <strong>{patient.id}</strong>
           </div>
 
           <div style={styles.infoBox}>
             <span>Name</span>
-            <strong>{patientProfile.name}</strong>
+            <strong>{patient.name}</strong>
           </div>
 
           <div style={styles.infoBox}>
             <span>Age</span>
-            <strong>{patientProfile.age} years</strong>
+            <strong>{patient.age} years</strong>
           </div>
 
           <div style={styles.infoBox}>
             <span>Last Login</span>
             <strong>
-              {new Date(patientProfile.lastLogin).toLocaleDateString()}
+              {new Date(patient.lastLogin || Date.now()).toLocaleDateString()}
             </strong>
           </div>
         </div>

@@ -1,10 +1,20 @@
 const jwt = require('jsonwebtoken');
-const { jwtSecret } = require('../config/env');
-const { pool } = require('../config/db');
 
+const {
+  jwtSecret
+} = require('../config/env');
+
+const User = require('../models/User');
+
+
+// ==========================================
 // AUTHENTICATION MIDDLEWARE
+// ==========================================
+
 async function protect(req, res, next) {
   try {
+
+    // 1. Get authorization header
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -14,7 +24,10 @@ async function protect(req, res, next) {
       });
     }
 
+
+    // 2. Extract token
     const token = authHeader.split(' ')[1];
+
     if (!token) {
       return res.status(401).json({
         success: false,
@@ -22,53 +35,47 @@ async function protect(req, res, next) {
       });
     }
 
-    let decoded;
-    try {
-      decoded = jwt.verify(token, jwtSecret);
-    } catch (err) {
+
+    // 3. Verify token
+    const decoded = jwt.verify(token, jwtSecret);
+
+
+    // 4. Find user in database
+    const user = await User.findById(decoded.id)
+      .select('-password');
+
+    if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid or expired token.'
+        message: 'User not found.'
       });
     }
 
-    const [rows] = await pool.query(
-      'SELECT id, name, email, role, avatar_url FROM users WHERE id = ? AND is_active = 1',
-      [decoded.id]
-    );
 
-    if (rows.length === 0) {
-      return res.status(401).json({
-        success: false,
-        message: 'User not found or inactive.'
-      });
-    }
+    // 5. Attach user to request
+    req.user = user;
 
-    req.user = rows[0];
+
+    // 6. Continue to next middleware/controller
     next();
+
   } catch (error) {
+
     console.error('Authentication error:', error.message);
+
     return res.status(401).json({
       success: false,
       message: 'Invalid or expired token.'
     });
+
   }
 }
 
-// ROLE AUTHORIZATION MIDDLEWARE
-function authorize(...roles) {
-  return (req, res, next) => {
-    if (!req.user || !roles.includes(req.user.role)) {
-      return res.status(403).json({
-        success: false,
-        message: 'Access denied: insufficient permissions.'
-      });
-    }
-    next();
-  };
-}
+
+// ==========================================
+// EXPORT MIDDLEWARE
+// ==========================================
 
 module.exports = {
-  protect,
-  authorize
+  protect
 };

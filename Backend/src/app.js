@@ -5,16 +5,8 @@ const swaggerUi = require("swagger-ui-express");
 // Import Swagger configuration
 const swaggerSpec = require("./config/swagger");
 
-// Import routes
+// Import authentication routes
 const authRoutes = require("./routes/authRoutes");
-const patientRoutes = require("./routes/patientRoutes");
-const gameRoutes = require("./routes/gameRoutes");
-const resultsRoutes = require("./routes/resultsRoutes");
-const dashboardRoutes = require("./routes/dashboardRoutes");
-const reminderRoutes = require("./routes/reminderRoutes");
-const memoryRoutes = require("./routes/memoryRoutes");
-const voiceRoutes = require("./routes/voiceRoutes");
-const caregiverRoutes = require("./routes/caregiverRoutes");
 
 const app = express();
 
@@ -28,17 +20,6 @@ app.use(cors());
 // Read JSON data from requests
 app.use(express.json());
 
-// Request logger for terminal visibility
-app.use((req, res, next) => {
-  const start = Date.now();
-  const timestamp = new Date().toLocaleTimeString();
-  res.on("finish", () => {
-    const duration = Date.now() - start;
-    console.log(`📡 [${timestamp}] ${req.method} ${req.originalUrl} -> ${res.statusCode} (${duration}ms)`);
-  });
-  next();
-});
-
 // ===============================
 // SWAGGER DOCUMENTATION
 // ===============================
@@ -50,18 +31,10 @@ app.use(
 );
 
 // ===============================
-// ROUTES
+// AUTHENTICATION ROUTES
 // ===============================
 
 app.use("/api/auth", authRoutes);
-app.use("/api/patient", patientRoutes);
-app.use("/api/games", gameRoutes);
-app.use("/api/results", resultsRoutes);
-app.use("/api/dashboard", dashboardRoutes);
-app.use("/api/reminders", reminderRoutes);
-app.use("/api/memories", memoryRoutes);
-app.use("/api/voice", voiceRoutes);
-app.use("/api/caregiver", caregiverRoutes);
 
 // ===============================
 // HOME ROUTE
@@ -91,7 +64,6 @@ app.get("/", (req, res) => {
 
 app.get("/api/health", (req, res) => {
   res.status(200).json({
-    success: true,
     status: "success",
     database: "MySQL",
     message: "Backend is healthy and running",

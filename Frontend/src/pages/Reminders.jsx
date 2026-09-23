@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { reminderApi } from '../api/reminder.api';
-import { getReminders, addReminder, updateReminder, deleteReminder, saveReminders } from '../services/reminderService';
+import { getReminders, addReminder, updateReminder, deleteReminder } from '../services/reminderService';
 import { CheckCircle2, Circle, Clock, Plus, Trash2, Edit2, X } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { formatReminderTime } from '../utils/timeUtils';
@@ -20,19 +19,7 @@ export default function Reminders() {
 
   const [editingId, setEditingId] = useState(null);
 
-  const loadReminders = async () => {
-    try {
-      const res = await reminderApi.getReminders();
-      if (res.reminders && res.reminders.length > 0) {
-        setReminders(res.reminders);
-        saveReminders(res.reminders);
-        return;
-      }
-    } catch {
-      // offline or mock fallback
-    }
-    setReminders(getReminders());
-  };
+  const loadReminders = () => setReminders(getReminders());
 
   useEffect(() => {
     loadReminders();
@@ -60,8 +47,8 @@ export default function Reminders() {
 
   const openEditModal = (reminder) => {
     setEditingId(reminder.id);
-    setNewTitle(reminder.text || reminder.title);
-    setNewDate(reminder.date || 'Today');
+    setNewTitle(reminder.text);
+    setNewDate(reminder.date);
     const t = parseTime(reminder.time);
     setNewHour(t.hour);
     setNewMinute(t.minute);
@@ -69,36 +56,28 @@ export default function Reminders() {
     setIsModalOpen(true);
   };
 
-  const handleSave = async (e) => {
+  const handleSave = (e) => {
     e.preventDefault();
     if (!newTitle) return;
     
+    // Ensure "6:00 PM" format without leading zero on hour unless it's a single digit and you want that
     const formattedHour = parseInt(newHour, 10).toString(); 
     const formattedTime = `${formattedHour}:${newMinute} ${newPeriod}`;
 
     if (editingId) {
       updateReminder(editingId, { text: newTitle, time: formattedTime, date: newDate });
     } else {
-      try {
-        await reminderApi.createReminder({ title: newTitle, time: formattedTime, type: 'activity', recurrence: 'Daily' });
-      } catch {
-        addReminder({ text: newTitle, time: formattedTime, date: newDate, status: 'pending' });
-      }
+      addReminder({ text: newTitle, time: formattedTime, date: newDate, status: 'pending' });
     }
     
-    await loadReminders();
+    loadReminders();
     setIsModalOpen(false);
   };
 
-  const toggleStatus = async (id, currentStatus) => {
-    try {
-      await reminderApi.toggleReminder(id);
-    } catch {
-      // fallback
-    }
+  const toggleStatus = (id, currentStatus) => {
     const newStatus = currentStatus === 'completed' ? 'pending' : 'completed';
     updateReminder(id, { status: newStatus });
-    await loadReminders();
+    loadReminders();
   };
 
   const handleDelete = (id) => {

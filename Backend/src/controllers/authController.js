@@ -2,12 +2,9 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { pool } = require('../config/db');
-const { jwtSecret, jwtExpiresIn, nodeEnv } = require('../config/env');
+const { jwtSecret, jwtExpiresIn } = require('../config/env');
 
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const ALLOWED_REGISTER_ROLES = ['patient', 'caregiver'];
-
-// Helper to generate JWT token with server-authoritative claims
+// Helper to generate JWT token
 function generateToken(user) {
   return jwt.sign(
     {
@@ -25,7 +22,7 @@ function generateToken(user) {
 // REGISTER USER
 async function register(req, res) {
   try {
-    const { name, email, password, role = 'patient' } = req.body || {};
+    const { name, email, password, role = 'patient' } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({
@@ -34,45 +31,21 @@ async function register(req, res) {
       });
     }
 
-    const trimmedName = String(name).trim();
-    const normalizedEmail = String(email).trim().toLowerCase();
-
-    if (trimmedName.length < 2 || trimmedName.length > 100) {
-      return res.status(400).json({
-        success: false,
-        message: 'Name must be between 2 and 100 characters'
-      });
-    }
-
-    if (!EMAIL_REGEX.test(normalizedEmail)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Please provide a valid email address'
-      });
-    }
-
-    if (typeof password !== 'string' || password.length < 6) {
+    if (password.length < 6) {
       return res.status(400).json({
         success: false,
         message: 'Password must be at least 6 characters'
       });
     }
 
-    // Strict Role Validation: Disallow public registration for 'admin' or arbitrary roles
-    const normalizedRole = String(role).trim().toLowerCase();
-    if (!ALLOWED_REGISTER_ROLES.includes(normalizedRole)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid role. Self-registration is restricted to patient or caregiver.'
-      });
-    }
+    const normalizedEmail = email.trim().toLowerCase();
 
     // Check if user already exists
     const [existing] = await pool.query('SELECT id FROM users WHERE LOWER(email) = ?', [normalizedEmail]);
     if (existing.length > 0) {
       return res.status(409).json({
         success: false,
-        message: 'User already exists with this email address'
+        message: 'User already exists'
       });
     }
 
@@ -82,40 +55,25 @@ async function register(req, res) {
     await pool.query(
       `INSERT INTO users (id, name, email, password, role, is_active, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, 1, NOW(), NOW())`,
-      [userId, trimmedName, normalizedEmail, hashedPassword, normalizedRole]
+      [userId, name.trim(), normalizedEmail, hashedPassword, role]
     );
 
     let patientId = null;
-    let caregiverId = null;
-
-    if (normalizedRole === 'patient') {
+    if (role === 'patient') {
       patientId = `PAT_${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
       await pool.query(
         `INSERT INTO patients (id, user_id, name, age, primary_language, condition_stage, avatar_url, created_at, updated_at)
          VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())`,
-        [patientId, userId, trimmedName, 70, 'as', 'Mild Cognitive Impairment', '/ner_senior_avatar.png']
+        [patientId, userId, name.trim(), 70, 'as', 'Mild Cognitive Impairment', '/ner_senior_avatar.png']
       );
-    } else if (normalizedRole === 'caregiver') {
-      caregiverId = `CG_${crypto.randomUUID().slice(0, 8).toUpperCase()}`;
-      try {
-        await pool.query(
-          `INSERT INTO caregivers (id, user_id, name, relationship, phone, created_at, updated_at)
-           VALUES (?, ?, ?, ?, ?, NOW(), NOW())`,
-          [caregiverId, userId, trimmedName, 'Family', '']
-        );
-      } catch (cgErr) {
-        // Table may have specific schema; non-fatal if columns differ
-        if (nodeEnv !== 'test') console.warn('[Auth] Caregiver table record notice:', cgErr.message);
-      }
     }
 
     const userObj = {
       id: userId,
-      name: trimmedName,
+      name: name.trim(),
       email: normalizedEmail,
-      role: normalizedRole,
-      ...(patientId ? { patientId } : {}),
-      ...(caregiverId ? { caregiverId } : {})
+      role,
+      ...(patientId ? { patientId } : {})
     };
 
     const token = generateToken(userObj);
@@ -127,7 +85,7 @@ async function register(req, res) {
       user: userObj
     });
   } catch (error) {
-    if (nodeEnv !== 'test') console.error('Registration error:', error.message);
+    console.error('Registration error:', error);
     return res.status(500).json({
       success: false,
       message: 'Registration failed'
@@ -138,7 +96,7 @@ async function register(req, res) {
 // LOGIN USER
 async function login(req, res) {
   try {
-    const { email, password } = req.body || {};
+    const { email, password } = req.body;
 
     if (!email || !password) {
       return res.status(400).json({
@@ -147,8 +105,9 @@ async function login(req, res) {
       });
     }
 
-    const normalizedInput = String(email).trim().toLowerCase();
+    const normalizedInput = email.trim().toLowerCase();
     const fallbackEmail = normalizedInput.includes('@') ? normalizedInput : `${normalizedInput}@eldercare.in`;
+    console.log(`🔑 [AUTH] Login attempt for: ${normalizedInput} (fallback: ${fallbackEmail})`);
 
     const [rows] = await pool.query(
       `SELECT u.id, u.name, u.email, u.password, u.role, u.avatar_url 
@@ -159,6 +118,7 @@ async function login(req, res) {
     );
 
     if (rows.length === 0) {
+      console.warn(`⚠️ [AUTH] User not found: ${normalizedInput}`);
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
@@ -166,9 +126,10 @@ async function login(req, res) {
     }
 
     const user = rows[0];
-    const isPasswordCorrect = await bcrypt.compare(String(password), user.password);
+    const isPasswordCorrect = await bcrypt.compare(password, user.password);
 
     if (!isPasswordCorrect) {
+      console.warn(`⚠️ [AUTH] Invalid password attempt for: ${normalizedInput}`);
       return res.status(401).json({
         success: false,
         message: 'Invalid email or password'
@@ -179,17 +140,10 @@ async function login(req, res) {
     await pool.query('UPDATE users SET last_login = NOW() WHERE id = ?', [user.id]);
 
     let patientId = null;
-    let caregiverId = null;
-
     if (user.role === 'patient') {
       const [patRows] = await pool.query('SELECT id FROM patients WHERE user_id = ?', [user.id]);
       if (patRows.length > 0) {
         patientId = patRows[0].id;
-      }
-    } else if (user.role === 'caregiver') {
-      const [cgRows] = await pool.query('SELECT id FROM caregivers WHERE user_id = ?', [user.id]);
-      if (cgRows.length > 0) {
-        caregiverId = cgRows[0].id;
       }
     }
 
@@ -199,11 +153,11 @@ async function login(req, res) {
       email: user.email,
       role: user.role,
       avatarUrl: user.avatar_url || '/ner_senior_avatar.png',
-      ...(patientId ? { patientId } : {}),
-      ...(caregiverId ? { caregiverId } : {})
+      ...(patientId ? { patientId } : {})
     };
 
     const token = generateToken(userObj);
+    console.log(`✅ [AUTH] Login SUCCESS: ${user.email} (${user.role})`);
 
     return res.status(200).json({
       success: true,
@@ -212,7 +166,7 @@ async function login(req, res) {
       user: userObj
     });
   } catch (error) {
-    if (nodeEnv !== 'test') console.error('Login error:', error.message);
+    console.error('Login error:', error);
     return res.status(500).json({
       success: false,
       message: 'Login failed'
@@ -220,7 +174,7 @@ async function login(req, res) {
   }
 }
 
-// GET CURRENT USER PROFILE (AUTHORITATIVE IDENTITY)
+// GET CURRENT USER PROFILE
 async function getMe(req, res) {
   try {
     const userId = req.user.id;
@@ -238,8 +192,13 @@ async function getMe(req, res) {
     }
 
     const user = rows[0];
-    let patientId = req.user.patientId || null;
-    let caregiverId = req.user.caregiverId || null;
+    let patientId = null;
+    if (user.role === 'patient') {
+      const [patRows] = await pool.query('SELECT id FROM patients WHERE user_id = ?', [user.id]);
+      if (patRows.length > 0) {
+        patientId = patRows[0].id;
+      }
+    }
 
     return res.status(200).json({
       success: true,
@@ -251,12 +210,11 @@ async function getMe(req, res) {
         avatarUrl: user.avatar_url || '/ner_senior_avatar.png',
         phone: user.phone || '',
         createdAt: user.created_at,
-        ...(patientId ? { patientId } : {}),
-        ...(caregiverId ? { caregiverId } : {})
+        ...(patientId ? { patientId } : {})
       }
     });
   } catch (error) {
-    if (nodeEnv !== 'test') console.error('Get user error:', error.message);
+    console.error('Get user error:', error);
     return res.status(500).json({
       success: false,
       message: 'Failed to fetch user'
@@ -274,23 +232,19 @@ async function logout(req, res) {
 
 // FORGOT PASSWORD
 async function forgotPassword(req, res) {
-  const { email } = req.body || {};
-  if (!email || !EMAIL_REGEX.test(String(email).trim().toLowerCase())) {
-    return res.status(400).json({ success: false, message: 'Valid email is required' });
+  const { email } = req.body;
+  if (!email) {
+    return res.status(400).json({ success: false, message: 'Email is required' });
   }
-  // Safe generic response preventing email enumeration
   return res.status(200).json({
     success: true,
-    message: 'If the email exists in our records, password reset instructions have been sent.'
+    message: 'Password reset instructions sent to your email'
   });
 }
 
 // RESET PASSWORD
 async function resetPassword(req, res) {
-  const { token, newPassword } = req.body || {};
-  if (!token) {
-    return res.status(400).json({ success: false, message: 'Reset token is required' });
-  }
+  const { token, newPassword } = req.body;
   if (!newPassword || newPassword.length < 6) {
     return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
   }

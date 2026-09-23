@@ -1,11 +1,11 @@
 const crypto = require('crypto');
 const { pool } = require('../config/db');
-const { mlAdaptiveUrl, nodeEnv } = require('../config/env');
+const { mlAdaptiveUrl } = require('../config/env');
 
-// Helper to sanitize difficulty strictly within [1, 5]
+// Helper to sanitize difficulty to [1, 5]
 function clampDifficulty(diff) {
   const num = Number(diff);
-  if (isNaN(num) || !Number.isFinite(num)) return 2;
+  if (isNaN(num)) return 2;
   return Math.min(5, Math.max(1, Math.round(num)));
 }
 
@@ -13,58 +13,45 @@ function clampDifficulty(diff) {
 async function submitAttempt(req, res) {
   try {
     const body = req.body || {};
-    const user = req.user;
+    const userId = req.user?.id;
 
-    const sessionId = String(body.sessionId || `ses_${Date.now()}`).trim().slice(0, 100);
-    const gameId = String(body.gameId || 'memory-match').trim().slice(0, 50);
-
-    // Authoritative patient resolution
-    let patientId = user?.patientId || 'GUEST';
-
-    // Verify session in database if it exists
-    const [sesCheck] = await pool.query(
-      'SELECT session_id, patient_id, current_difficulty FROM game_sessions WHERE session_id = ?',
-      [sessionId]
-    );
-
-    if (sesCheck.length > 0) {
-      const sessionRecord = sesCheck[0];
-      // Anti-impersonation: if session belongs to a real patient, verify the caller matches
-      if (sessionRecord.patient_id !== 'GUEST' && user?.patientId && sessionRecord.patient_id !== user.patientId) {
-        return res.status(403).json({
-          success: false,
-          message: 'Access denied: You cannot submit telemetry for another patient session.'
-        });
+    // Resolve patientId
+    let patientId = 'PAT001';
+    if (userId) {
+      const [patRows] = await pool.query('SELECT id FROM patients WHERE user_id = ?', [userId]);
+      if (patRows.length > 0) {
+        patientId = patRows[0].id;
       }
-      patientId = sessionRecord.patient_id;
     }
 
+    const sessionId = body.sessionId || `ses_${Date.now()}`;
+    const gameId = body.gameId || 'memory-match';
     const currentDifficulty = clampDifficulty(body.current_difficulty || body.difficulty || 2);
 
-    // Normalize accuracy: scale to 0.0 - 1.0
+    // Normalize accuracy: if passed as 85, divide by 100 -> 0.85
     let rawAcc = Number(body.accuracy);
-    if (isNaN(rawAcc) || !Number.isFinite(rawAcc)) rawAcc = 0.8;
+    if (isNaN(rawAcc)) rawAcc = 0.8;
     if (rawAcc > 1.0) rawAcc = rawAcc / 100;
     const accuracy = Math.min(1.0, Math.max(0.0, rawAcc));
 
-    const responseTime = Math.max(0.1, Number(body.response_time) || 3.0);
-    const attempts = Math.max(1, parseInt(body.attempts, 10) || 1);
+    const responseTime = Math.max(0.0, Number(body.response_time) || 3.0);
+    const attempts = Math.max(0, parseInt(body.attempts, 10) || 1);
     const hintsUsed = Math.max(0, parseInt(body.hints_used, 10) || 0);
 
     let recentAcc = Number(body.recent_accuracy);
-    if (isNaN(recentAcc) || !Number.isFinite(recentAcc)) recentAcc = accuracy;
+    if (isNaN(recentAcc)) recentAcc = accuracy;
     if (recentAcc > 1.0) recentAcc = recentAcc / 100;
     const recentAccuracy = Math.min(1.0, Math.max(0.0, recentAcc));
 
-    const recentResponseTime = Math.max(0.1, Number(body.recent_response_time) || responseTime);
-    const accuracyTrend = Number.isFinite(Number(body.accuracy_trend)) ? Number(body.accuracy_trend) : 0.0;
-    const responseTimeTrend = Number.isFinite(Number(body.response_time_trend)) ? Number(body.response_time_trend) : 0.0;
+    const recentResponseTime = Math.max(0.0, Number(body.recent_response_time) || responseTime);
+    const accuracyTrend = Number(body.accuracy_trend) || 0.0;
+    const responseTimeTrend = Number(body.response_time_trend) || 0.0;
     const consecutiveSuccesses = Math.max(0, parseInt(body.consecutive_successes, 10) || 1);
 
-    const gameType = String(body.game_type || (gameId === 'attention-test' ? 'attention' : 'memory')).slice(0, 50);
-    const cognitiveDomain = String(body.cognitive_domain || (gameId === 'attention-test' ? 'attention' : 'memory')).slice(0, 50);
+    const gameType = String(body.game_type || (gameId === 'attention-test' ? 'attention' : 'memory'));
+    const cognitiveDomain = String(body.cognitive_domain || (gameId === 'attention-test' ? 'attention' : 'memory'));
 
-    // Prepare strictly validated payload for Python Random Forest
+    // Prepare strict schema payload for Python Random Forest
     const mlPayload = {
       game_type: gameType,
       cognitive_domain: cognitiveDomain,
@@ -80,7 +67,7 @@ async function submitAttempt(req, res) {
       consecutive_successes: consecutiveSuccesses
     };
 
-    // Invoke Python ML Service with timeout and safe fallback
+    // Invoke Python Adaptive Difficulty ML Service with safe fallback
     let nextDifficulty = currentDifficulty;
     let confidence = null;
     let predictionSource = 'fallback';
@@ -100,24 +87,26 @@ async function submitAttempt(req, res) {
 
       if (mlRes.ok) {
         const mlData = await mlRes.json();
-        if (typeof mlData.next_difficulty === 'number' && Number.isFinite(mlData.next_difficulty)) {
+        if (typeof mlData.next_difficulty === 'number' && !isNaN(mlData.next_difficulty)) {
           nextDifficulty = clampDifficulty(mlData.next_difficulty);
           confidence = typeof mlData.confidence === 'number' ? mlData.confidence : null;
           predictionSource = 'ml';
         }
       } else {
-        if (nodeEnv !== 'test') console.warn(`[Adaptive ML] Returned HTTP ${mlRes.status}. Using fallback.`);
+        console.warn(`[Adaptive ML] Service returned HTTP ${mlRes.status}. Using fallback.`);
       }
     } catch (mlErr) {
-      if (nodeEnv !== 'test') console.warn(`[Adaptive ML] Service unavailable (${mlErr.message}). Fallback to current difficulty.`);
+      console.warn(`[Adaptive ML] Service unavailable or timeout (${mlErr.message}). Using safe fallback.`);
     }
 
     const attemptId = `att_${Date.now()}_${crypto.randomUUID().slice(0, 6)}`;
     const score = Math.round(accuracy * 100);
+    const scorePercent = score;
     const timeTakenSeconds = Math.round(responseTime * attempts) || 30;
 
-    // Ensure session exists in game_sessions
+    // Ensure session exists in game_sessions to satisfy foreign key constraint
     try {
+      const [sesCheck] = await pool.query('SELECT session_id FROM game_sessions WHERE session_id = ?', [sessionId]);
       if (sesCheck.length === 0) {
         await pool.query(
           `INSERT INTO game_sessions (session_id, patient_id, game_id, starting_difficulty, current_difficulty, status, started_at)
@@ -126,10 +115,10 @@ async function submitAttempt(req, res) {
         );
       }
     } catch (sesErr) {
-      if (nodeEnv !== 'test') console.warn('[DB Session Ensure] Warning:', sesErr.message);
+      console.warn('[DB Session Ensure] Warning:', sesErr.message);
     }
 
-    // Record in game_attempts table
+    // 1. Record in game_attempts table
     try {
       await pool.query(
         `INSERT INTO game_attempts (id, session_id, patient_id, game_id, round_number, difficulty, accuracy, response_time, hints_used, is_correct, telemetry, created_at)
@@ -149,10 +138,10 @@ async function submitAttempt(req, res) {
         ]
       );
     } catch (dbErr) {
-      if (nodeEnv !== 'test') console.warn('[DB Attempt Insert] Non-fatal logging error:', dbErr.message);
+      console.warn('[DB Attempt Insert] Non-fatal attempt logging error:', dbErr.message);
     }
 
-    // Record in game_results table
+    // 2. Record in game_results table
     const resultId = `res_${Date.now()}_${crypto.randomUUID().slice(0, 6)}`;
     try {
       const summaryText = score >= 80 ? 'High accuracy recorded.' : 'Consistent practice recorded.';
@@ -168,7 +157,7 @@ async function submitAttempt(req, res) {
           cognitiveDomain,
           currentDifficulty,
           score,
-          score,
+          scorePercent,
           timeTakenSeconds,
           attempts,
           Math.round(accuracy * attempts),
@@ -185,7 +174,7 @@ async function submitAttempt(req, res) {
         [nextDifficulty, sessionId]
       );
     } catch (dbErr) {
-      if (nodeEnv !== 'test') console.warn('[DB Result Insert] Non-fatal logging error:', dbErr.message);
+      console.warn('[DB Result Insert] Non-fatal result logging error:', dbErr.message);
     }
 
     return res.status(200).json({
@@ -195,7 +184,7 @@ async function submitAttempt(req, res) {
       sessionId,
       gameId,
       score,
-      accuracy: score,
+      accuracy: scorePercent,
       timeTaken: `${timeTakenSeconds}s`,
       next_difficulty: nextDifficulty,
       nextDifficulty: nextDifficulty,
@@ -204,7 +193,7 @@ async function submitAttempt(req, res) {
       telemetry: mlPayload
     });
   } catch (error) {
-    if (nodeEnv !== 'test') console.error('submitAttempt error:', error.message);
+    console.error('submitAttempt error:', error);
     return res.status(500).json({
       success: false,
       message: 'Failed to record gameplay attempt'

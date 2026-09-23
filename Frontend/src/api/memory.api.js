@@ -31,10 +31,10 @@ export const memoryApi = {
    * Generate an interactive recall activity from caregiver-verified memories
    * @param {string} patientId
    */
-  async generateRecallActivity(patientId = null) {
+  async generateRecallActivity(patientId = 'PAT001') {
     return apiClient('/api/memories/generate-activity', {
       method: 'POST',
-      body: patientId ? { patient_id: patientId } : {}
+      body: { patient_id: patientId }
     });
   }
 };

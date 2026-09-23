@@ -5,6 +5,7 @@ import { playCorrectSound, playIncorrectSound, playCompletionSound } from '../ut
 import { useLanguage } from '../context/LanguageContext';
 import { useGameSession } from '../hooks/useGameSession';
 import { useAdaptiveDifficulty } from '../hooks/useAdaptiveDifficulty';
+import { attemptApi } from '../api/attempt.api';
 
 // Modularized game components
 import MemoryMatch from '../components/games/MemoryMatch';
@@ -25,7 +26,7 @@ export default function GameView() {
   const [feedbackMessage, setFeedbackMessage] = useState(null);
 
   const { sessionId, sessionState, error, retrySession } = useGameSession(gameId);
-  const { currentDifficulty, predictNext } = useAdaptiveDifficulty(2);
+  const { currentDifficulty, nextDifficulty, predictNext } = useAdaptiveDifficulty(2);
 
   const showFeedback = (isCorrect) => {
     setFeedbackMessage(isCorrect ? 'correct' : 'incorrect');

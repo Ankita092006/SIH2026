@@ -25,7 +25,7 @@ export default function Home() {
     setLoading(true);
     setError(null);
     try {
-      const [profileRes, _summaryRes, remindersRes, resultsRes] = await Promise.all([
+      const [profileRes, summaryRes, remindersRes, resultsRes] = await Promise.all([
         patientApi.getProfile().catch(() => ({ patient: { name: 'Bhaben Barua', avatarUrl: '/ner_senior_avatar.png' } })),
         dashboardApi.getSummary().catch(() => null),
         reminderApi.getReminders().catch(() => ({ reminders: [] })),

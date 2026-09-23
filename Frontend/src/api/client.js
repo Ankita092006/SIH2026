@@ -116,9 +116,8 @@ export async function apiClient(endpoint, options = {}) {
     }
 
     throw new ApiError(
-      fallbackRes.data?.message || err.message || 'Unable to connect to server. Please check your network.',
-      fallbackRes.status || 503,
-      fallbackRes.data
+      err.message || 'Unable to connect to server. Please check your network.',
+      503
     );
   }
 }

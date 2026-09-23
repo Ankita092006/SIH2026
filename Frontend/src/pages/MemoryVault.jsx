@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { memoryApi } from '../api/memory.api';
+import { useLanguage } from '../context/LanguageContext';
 import LoadingState from '../components/common/LoadingState';
 import ErrorState from '../components/common/ErrorState';
 import EmptyState from '../components/common/EmptyState';
-import { Sparkles, Plus, MapPin, Calendar, CheckCircle2 } from 'lucide-react';
+import { Sparkles, Plus, Image, MapPin, Calendar, Heart, CheckCircle2 } from 'lucide-react';
 
 export default function MemoryVault() {
   const [memories, setMemories] = useState([]);
@@ -20,6 +21,8 @@ export default function MemoryVault() {
   const [newRelationship, setNewRelationship] = useState('');
   const [newLocation, setNewLocation] = useState('');
   const [newDesc, setNewDesc] = useState('');
+
+  const { t } = useLanguage();
 
   const fetchMemories = async () => {
     setLoading(true);
